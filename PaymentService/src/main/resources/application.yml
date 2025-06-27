@@ -18,3 +18,7 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
       database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  toss:
+    widget:
+      secretkey: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
