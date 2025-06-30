@@ -8,7 +8,8 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentConfirmDTO {
+public class PaymentRequestDTO {
+    private Long memberId;
     private String orderId;
     private String paymentKey;
     private Long amount;

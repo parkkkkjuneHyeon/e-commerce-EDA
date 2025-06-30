@@ -28,6 +28,7 @@ public class VirtualAccountDTO {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
+    @ToString
     @Builder
     public static class RefundReceiveAccount {
         private String bankCode;

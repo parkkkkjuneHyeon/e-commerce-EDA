@@ -22,4 +22,12 @@ public enum PaymentMethod {
         this.description = description;
     }
 
+    public static PaymentMethod getPaymentMethod(String description) {
+        for (PaymentMethod paymentMethod : PaymentMethod.values()) {
+            if (paymentMethod.description.equals(description)) {
+                return paymentMethod;
+            }
+        }
+        return null;
+    }
 }

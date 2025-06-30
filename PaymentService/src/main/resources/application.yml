@@ -20,5 +20,7 @@ spring:
       database-platform: org.hibernate.dialect.MySQL8Dialect
 
   toss:
+    url: https://api.tosspayments.com/v1/payments
+
     widget:
-      secretkey: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+      secretkey: ${TOSS_SECRETKEY:test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6}
