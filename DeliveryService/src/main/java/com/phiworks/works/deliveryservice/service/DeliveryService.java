@@ -56,7 +56,8 @@ public class DeliveryService {
     }
 
     public DeliveryResponseDTO getDelivery(Long deliveryId) {
-        DeliveryEntity deliveryEntity = deliveryRepository.findById(deliveryId)
+        DeliveryEntity deliveryEntity = deliveryRepository
+                .findById(deliveryId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid delivery id: " + deliveryId));
 
         return DeliveryResponseDTO.of(deliveryEntity);
@@ -64,7 +65,8 @@ public class DeliveryService {
 
 
     public List<MemberAddressResponseDTO> getMemberAddress(Long memberId) {
-        return memberAddressRepository.findByMemberId(memberId)
+        return memberAddressRepository
+                .findByMemberId(memberId)
                 .stream().map(MemberAddressResponseDTO::of)
                 .toList();
 

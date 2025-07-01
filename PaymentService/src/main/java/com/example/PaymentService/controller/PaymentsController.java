@@ -9,14 +9,14 @@ public class PaymentsController {
 
     @GetMapping("/payments")
     public String payments() {
-        return "/checkout";
+        return "checkout";
     }
     @GetMapping("/success")
     public String success() {
-        return "/success";
+        return "success";
     }
     @GetMapping("/failure")
     public String fail() {
-        return "/fail";
+        return "fail";
     }
 }
