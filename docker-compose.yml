@@ -1,0 +1,88 @@
+version: "3.8"
+
+services:
+
+  redis-server:
+    image: redis:6.2.6-alpine
+    ports: 
+      - "6379:6379"
+
+  mysql-server:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=my_db
+    ports:
+      - "3306:3306"
+    networks:
+        - eda-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p1234"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  member-service:
+    image: member-service
+    ports:
+      - "8081:8080"
+    depends_on:
+      mysql-server:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql-server
+      - DB_PORT=3306
+      - DB_DATABASE=my_db
+      - DB_ROOT_ID=root
+      - DB_ROOT_PW=1234
+    networks:
+      - eda-network
+
+  payment-service:
+    image: payment-service
+    ports:
+      - "8082:8080"
+    depends_on:
+      mysql-server:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql-server
+      - DB_PORT=3306
+      - DB_DATABASE=my_db
+      - DB_ROOT_ID=root
+      - DB_ROOT_PW=1234
+    networks:
+      - eda-network
+
+  delivery-service:
+    image: delivery-service
+    ports:
+      - "8083:8080"
+    depends_on:
+      mysql-server:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql-server
+      - DB_PORT=3306
+      - DB_DATABASE=my_db
+      - DB_ROOT_ID=root
+      - DB_ROOT_PW=1234
+    networks:
+      - eda-network
+    
+  search-service:
+    image: search-service
+    ports: 
+      - "8084:8080"
+    depends_on: 
+      - redis-server
+    
+    environment:
+      - REDIS_HOST=redis-server
+      - REDIS_PORT=6379
+
+
+networks:
+  eda-network:
+    driver: bridge
