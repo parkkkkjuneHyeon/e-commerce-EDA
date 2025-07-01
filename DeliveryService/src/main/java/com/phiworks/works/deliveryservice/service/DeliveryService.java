@@ -1,6 +1,7 @@
 package com.phiworks.works.deliveryservice.service;
 
-import com.phiworks.works.deliveryservice.dg.DeliveryAdapter;
+import com.phiworks.works.deliveryservice.dg.DeliveryStrategy;
+import com.phiworks.works.deliveryservice.dg.adapter.DeliveryAdapter;
 import com.phiworks.works.deliveryservice.dto.address.MemberAddressRequestDTO;
 import com.phiworks.works.deliveryservice.dto.address.MemberAddressResponseDTO;
 import com.phiworks.works.deliveryservice.dto.delivery.DeliveryRequestDTO;
@@ -13,12 +14,14 @@ import com.phiworks.works.deliveryservice.type.DeliveryStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class DeliveryService {
     private final MemberAddressRepository memberAddressRepository;
     private final DeliveryRepository deliveryRepository;
-    private final DeliveryAdapter deliveryAdapter;
+    private final DeliveryStrategy deliveryStrategy;
 
 
     public MemberAddressResponseDTO registerAddress(MemberAddressRequestDTO memberAddressRequestDTO) {
@@ -33,7 +36,7 @@ public class DeliveryService {
 
     public DeliveryResponseDTO processDelivery(DeliveryRequestDTO deliveryRequestDTO) {
         //외부 api 요청
-        Long referenceCode = deliveryAdapter.processDelivery(deliveryRequestDTO);
+        Long referenceCode = deliveryStrategy.processDelivery(deliveryRequestDTO);
         deliveryRequestDTO.setReferenceCode(referenceCode);
 
         DeliveryEntity deliveryEntity = DeliveryRequestDTO
@@ -48,6 +51,7 @@ public class DeliveryService {
         MemberAddressEntity memberAddressEntity = memberAddressRepository
                 .findById(addressId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid address id: " + addressId));
+
         return MemberAddressResponseDTO.of(memberAddressEntity);
     }
 
@@ -59,5 +63,17 @@ public class DeliveryService {
     }
 
 
+    public List<MemberAddressResponseDTO> getMemberAddress(Long memberId) {
+        return memberAddressRepository.findByMemberId(memberId)
+                .stream().map(MemberAddressResponseDTO::of)
+                .toList();
 
+    }
+
+    public DeliveryResponseDTO getDeliveryByOrderId(String orderId) {
+        return deliveryRepository.findByOrderId(orderId)
+                .map(DeliveryResponseDTO::of)
+                .orElseThrow(() -> new RuntimeException("해당 주문건이 존재 하지않습니다."));
+
+    }
 }

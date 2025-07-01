@@ -23,6 +23,8 @@ public class DeliveryRequestDTO {
 
     public Long referenceCode;
 
+    private String deliveryName;
+
     public static DeliveryEntity of(DeliveryRequestDTO dto) {
         return DeliveryEntity.builder()
                 .orderId(dto.getOrderId())

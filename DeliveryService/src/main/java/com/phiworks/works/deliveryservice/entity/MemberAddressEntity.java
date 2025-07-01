@@ -4,7 +4,7 @@ package com.phiworks.works.deliveryservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-
+@Setter
 @Getter
 @Entity
 @Table(name = "member_address", indexes = {

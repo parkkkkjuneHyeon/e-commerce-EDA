@@ -5,7 +5,7 @@ import com.phiworks.works.deliveryservice.type.DeliveryStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-
+@Setter
 @Getter
 @Entity
 @Table(name = "delivery", indexes = {
