@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: CatalogService
+
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_DATABASE:my_db}?useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_ROOT_ID:root}
+    password: ${DB_ROOT_PW:1234}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  cassandra:
+    keyspace-name: ${CASSAN_KEYSPACE:catalog}
+    local-datacenter: ${CASSAN_DATACENTER:datacenter1}
+    schema-action: create_if_not_exists
+    contact-points: ${CASSAN_CONTACT_POINTS:127.0.0.1}
+    port: ${CASSAN_PORT:9042}
