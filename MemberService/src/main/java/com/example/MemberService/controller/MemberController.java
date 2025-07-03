@@ -22,12 +22,21 @@ public class MemberController {
         return ResponseEntity.ok(registerUser);
     }
 
-    @PutMapping("/users/{userId}/modify")
+    @PutMapping("/users/{memberId}/modify")
     public ResponseEntity<UserDTO> userModify(
-            @PathVariable(value = "userId") Long userId,
+            @PathVariable(value = "memberId") Long memberId,
             @RequestBody UserDTO userDTO
     ){
-        UserDTO updateUser = userService.updateUser(userId, userDTO);
+        UserDTO updateUser = userService.updateUser(memberId, userDTO);
+
+        return ResponseEntity.ok(updateUser);
+    }
+
+    @GetMapping("/users/{userId}/search-email")
+    public ResponseEntity<UserDTO> userModify(
+            @PathVariable(value = "userId") String userId
+    ){
+        UserDTO updateUser = userService.findByUserId(userId);
 
         return ResponseEntity.ok(updateUser);
     }
