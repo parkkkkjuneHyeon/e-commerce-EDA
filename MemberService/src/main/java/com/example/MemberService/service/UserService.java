@@ -65,7 +65,6 @@ public class UserService {
         );
     }
 
-
     private void validatePassword(UserEntity userEntity, UserDTO userDTO) {
         if(!userEntity.getPassword().equals(userDTO.password()))
             throw new RuntimeException("ID or password Mismatch");
@@ -80,5 +79,11 @@ public class UserService {
     private void validateLoginId(UserEntity userEntity, UserDTO userDTO) {
         if(!userEntity.getLoginId().equals(userDTO.loginId()))
             throw new RuntimeException("ID or password Mismatch");
+    }
+
+    public UserDTO findByUserId(String userId) {
+        UserEntity userEntity = userRepository.findByLoginId(userId)
+                .orElseThrow(() -> new RuntimeException("ID or password Mismatch"));
+        return UserDTO.of(userEntity);
     }
 }

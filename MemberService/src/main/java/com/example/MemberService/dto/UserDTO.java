@@ -20,6 +20,16 @@ public record UserDTO(
                 .build();
     }
 
+    public static UserDTO of(UserEntity userEntity) {
+        return new UserDTO(
+                userEntity.getId(),
+                userEntity.getLoginId(),
+                userEntity.getUserName(),
+                null
+        );
+
+    }
+
     public static UserEntity of(UserDTO userDTO) {
         return UserEntity.Builder()
                 .loginId(userDTO.loginId)

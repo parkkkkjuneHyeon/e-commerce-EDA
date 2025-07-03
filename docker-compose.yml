@@ -6,6 +6,40 @@ services:
     image: redis:6.2.6-alpine
     ports: 
       - "6379:6379"
+    networks:
+    - eda-network
+
+  cassandra-node-0:
+    image: cassandra
+    environment:
+      - CASSANDRA_SEEDS=cassandra-node-0
+      - CASSANDRA_CLUSTER_NAME=MyCluster
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_BROADCAST_RPC_ADDRESS=localhost
+      - CASSANDRA_RPC_ADDRESS=0.0.0.0
+      - MAX_HEAP_SIZE=1G
+      - HEAP_NEWSIZE=400M
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    ports:
+      - "7000:7000"    # 노드간 클러스터 내부 통신
+      - "7001:7001"    # 노드간 보안 통신에 사용
+      - "9042:9042"    # CQL 클라이언트와 연결
+    networks:
+      - eda-network
+    volumes:
+      - cassandra-node-0-data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'describe cluster'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 80s
 
   mysql-server:
     image: mysql:8.0
@@ -70,19 +104,43 @@ services:
       - DB_ROOT_PW=1234
     networks:
       - eda-network
-    
+
   search-service:
     image: search-service
     ports: 
       - "8084:8080"
     depends_on: 
       - redis-server
-    
     environment:
       - REDIS_HOST=redis-server
       - REDIS_PORT=6379
+    networks:
+      - eda-network
 
+  catalog-service:
+    image: catalog-service
+    ports:
+      - "8085:8080"
+    depends_on: 
+      cassandra-node-0:
+        condition: service_healthy
+      mysql-server:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql-server
+      - DB_PORT=3306
+      - DB_DATABASE=my_db
+      - DB_ROOT_ID=root
+      - DB_ROOT_PW=1234
+      - CASSAN_KEYSPACE=catalog
+      - CASSAN_DATACENTER=datacenter1
+      - CASSAN_CONTACT_POINTS=cassandra-node-0
+      - CASSAN_PORT=9042
+    networks:
+      - eda-network
 
 networks:
   eda-network:
     driver: bridge
+volumes:
+  cassandra-node-0-data:
