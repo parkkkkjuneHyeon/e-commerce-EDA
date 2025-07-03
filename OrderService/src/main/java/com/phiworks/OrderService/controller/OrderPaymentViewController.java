@@ -1,12 +1,14 @@
-package com.example.PaymentService.controller;
+package com.phiworks.OrderService.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-public class PaymentsController {
+@RequestMapping("/orders")
+public class OrderPaymentViewController {
 
 
     @GetMapping("/payments")
@@ -27,12 +29,14 @@ public class PaymentsController {
         model.addAttribute("customerName", customerName);
         model.addAttribute("customerEmail", customerEmail);
         model.addAttribute("customerMobilePhone", customerMobilePhone);
+
         return "checkout";
     }
     @GetMapping("/success")
     public String success() {
         return "success";
     }
+
     @GetMapping("/failure")
     public String fail() {
         return "fail";

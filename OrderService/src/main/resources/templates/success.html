@@ -29,7 +29,7 @@
           amount: amount,
         };
 
-        const response = await fetch("http://localhost:8080/payments/confirm", {
+        const response = await fetch("http://payment-service:8080/payments/confirm", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

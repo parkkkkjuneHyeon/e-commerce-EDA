@@ -91,8 +91,8 @@
       await widgets.requestPayment({
         orderId: paymentData.orderId,                             // "2hKuQwaW8lQWjO96IOFa", // 2hKuQwaW8lQWjO75sIOFa
         orderName: paymentData.orderName,                         // "토스 티셔츠 외 2건",
-        successUrl: "http://localhost:8080/success",
-        failUrl: "http://localhost:8080/failure",
+        successUrl: "http://localhost:8080/orders/success",
+        failUrl: "http://localhost:8080/orders/failure",
         customerEmail: paymentData.customerEmail,                 // "customer123@gmail.com",
         customerName: paymentData.customerName,                   // "김토스",
         customerMobilePhone: "01012341234"                        // "01012341234",
