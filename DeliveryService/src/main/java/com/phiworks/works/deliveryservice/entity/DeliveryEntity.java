@@ -28,6 +28,8 @@ public class DeliveryEntity {
 
     private String address;
 
+    private String deliveryCompany;
+
     private Long referenceCode;
 
     private DeliveryStatus deliveryStatus;

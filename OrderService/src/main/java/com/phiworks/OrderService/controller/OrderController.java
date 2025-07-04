@@ -1,7 +1,7 @@
 package com.phiworks.OrderService.controller;
 
-import com.phiworks.OrderService.dto.OrderRequestDTO;
-import com.phiworks.OrderService.dto.OrderResponseDTO;
+import com.phiworks.OrderService.dto.orders.OrderRequestDTO;
+import com.phiworks.OrderService.dto.orders.OrderResponseDTO;
 import com.phiworks.OrderService.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,19 +16,13 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @PostMapping("/start-order")
-    public ResponseEntity<OrderResponseDTO> startOrder(
-            @RequestBody OrderRequestDTO requestDTO
-    ) {
-
-        return ResponseEntity.ok(new OrderResponseDTO());
-    }
-
     @PostMapping("/finish-order")
     public ResponseEntity<OrderResponseDTO> finishOrder(
             @RequestBody OrderRequestDTO requestDTO
     ) {
-        return ResponseEntity.ok(new OrderResponseDTO());
+        var orderResponseDTO = orderService.finishOrder(requestDTO);
+
+        return ResponseEntity.ok(orderResponseDTO);
     }
 
     @GetMapping("/uers/{memberId}/orders")

@@ -7,24 +7,24 @@ import lombok.*;
 import java.time.ZonedDateTime;
 
 @Entity
-@Table(name = "order")
+@Table(name = "orders")
 @Getter
 @Setter
 @Builder
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderEntity {
+public class OrdersEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "VARCHAR(64)")
     private String id;
 
     private String orderName;
 
-    private Long count;
+    private Long productCount;          //paymentFeignClient에서 가져와서 저장
 
-    private Long orderPrice;
+    private Long amount;
 
     private Long memberId;
 

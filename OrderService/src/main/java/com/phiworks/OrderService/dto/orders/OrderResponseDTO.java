@@ -1,8 +1,10 @@
-package com.phiworks.OrderService.dto;
+package com.phiworks.OrderService.dto.orders;
 
 
 import com.phiworks.OrderService.types.OrderStatus;
 import lombok.*;
+
+import java.time.ZonedDateTime;
 
 @Getter
 @Setter
@@ -14,13 +16,15 @@ public class OrderResponseDTO {
 
     private String id;
 
-    private String orderName;
-
-    private Long count;
-
-    private Long orderPrice;
+    private Long deliveryId;
 
     private Long memberId;
+
+    private String orderName;
+
+    private Long productCount;
+
+    private Long amount;
 
     private OrderStatus orderStatus;
 
@@ -30,5 +34,5 @@ public class OrderResponseDTO {
 
     private String paymentKey;
 
-    private Long deliveryId;
+    private ZonedDateTime createdAt;
 }

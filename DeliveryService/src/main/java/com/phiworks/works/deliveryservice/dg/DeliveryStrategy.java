@@ -34,8 +34,8 @@ public class DeliveryStrategy {
         return deliveryAdapter.processDelivery(deliveryRequestDTO);
     }
 
-    private DeliveryAdapter getDeliveryAdapter(String deliveryName) {
-        DeliveryFields delivery = DeliveryFields.getDeliveryFields(deliveryName);
+    private DeliveryAdapter getDeliveryAdapter(String deliveryCompany) {
+        DeliveryFields delivery = DeliveryFields.getDeliveryFields(deliveryCompany);
         return deliveryAdaptersMap.get(delivery);
     }
 }

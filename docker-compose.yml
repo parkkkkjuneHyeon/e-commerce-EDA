@@ -138,6 +138,22 @@ services:
       - CASSAN_PORT=9042
     networks:
       - eda-network
+  
+  order-service:
+    image: order-service
+    ports:
+      - "8086:8080"
+    depends_on:
+      mysql-server:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql-server
+      - DB_PORT=3306
+      - DB_DATABASE=my_db
+      - DB_ROOT_ID=root
+      - DB_ROOT_PW=1234
+    networks:
+      - eda-network
 
 networks:
   eda-network:

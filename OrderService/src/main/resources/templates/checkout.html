@@ -6,6 +6,13 @@
 </head>
 <body>
 <!-- 데이터 전달용 숨겨진 input들 -->
+<input type="hidden" id="productId" th:value="${productId}" />
+<input type="hidden" id="productCount" th:value="${productCount}" />
+<input type="hidden" id="memberId" th:value="${memberId}" />
+<input type="hidden" id="deliveryCompany" th:value="${deliveryCompany}" />
+
+<input type="hidden" id="clientKey" th:value="${clientKey}" />
+<input type="hidden" id="baseUrl" th:value="${baseUrl}" />
 <input type="hidden" id="orderId" th:value="${orderId}" />
 <input type="hidden" id="price" th:value="${price}" />
 <input type="hidden" id="currency" th:value="${currency}" />
@@ -31,19 +38,13 @@
   main();
 
   async function main() {
-    const button = document.getElementById("payment-button");
-    const coupon = document.getElementById("coupon-box");
-    // ------  결제위젯 초기화 ------
-    const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-    const tossPayments = TossPayments(clientKey);
-    // 회원 결제
-    const customerKey = "YBOz7LsWuGfXQe-Bnfa04";
-    const widgets = tossPayments.widgets({
-      customerKey,
-    });
-    // 비회원 결제
-    // const widgets = tossPayments.widgets({ customerKey: TossPayments.ANONYMOUS });
     const paymentData = {
+      productId: document.getElementById("productId").value,
+      deliveryCompany: document.getElementById("deliveryCompany").value,
+      memberId: document.getElementById("memberId").value,
+      productCount: document.getElementById("productCount").value,
+      clientKey: document.getElementById("clientKey").value,
+      baseUrl: document.getElementById("baseUrl").value,
       orderId: document.getElementById("orderId").value,
       price: parseInt(document.getElementById("price").value),
       currency: document.getElementById("currency").value,
@@ -52,6 +53,20 @@
       customerEmail: document.getElementById("customerEmail").value,
       customerMobilePhone: document.getElementById("customerMobilePhone").value
     };
+
+    const button = document.getElementById("payment-button");
+    const coupon = document.getElementById("coupon-box");
+    // ------  결제위젯 초기화 ------
+    const clientKey = paymentData.clientKey;
+    const tossPayments = TossPayments(clientKey);
+    // 회원 결제
+    const customerKey = "YBOz7LsWuGfXQe-Bnfa04";
+    const widgets = tossPayments.widgets({
+      customerKey,
+    });
+    // 비회원 결제
+    // const widgets = tossPayments.widgets({ customerKey: TossPayments.ANONYMOUS });
+
 
     // ------ 주문의 결제 금액 설정 ------
     await widgets.setAmount({
@@ -91,11 +106,17 @@
       await widgets.requestPayment({
         orderId: paymentData.orderId,                             // "2hKuQwaW8lQWjO96IOFa", // 2hKuQwaW8lQWjO75sIOFa
         orderName: paymentData.orderName,                         // "토스 티셔츠 외 2건",
-        successUrl: "http://localhost:8080/orders/success",
-        failUrl: "http://localhost:8080/orders/failure",
+        successUrl: paymentData.baseUrl + "/orders/success",
+        failUrl: paymentData.baseUrl + "/orders/failure",
         customerEmail: paymentData.customerEmail,                 // "customer123@gmail.com",
         customerName: paymentData.customerName,                   // "김토스",
-        customerMobilePhone: "01012341234"                        // "01012341234",
+        customerMobilePhone: paymentData.customerMobilePhone,     //"01012341234",                       // "01012341234",
+        metadata: {
+          productId: paymentData.productId,
+          productCount: paymentData.productCount,
+          memberId: paymentData.memberId,
+          deliveryCompany: paymentData.deliveryCompany
+        }
       });
     });
   }
