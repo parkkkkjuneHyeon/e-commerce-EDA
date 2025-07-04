@@ -3,12 +3,14 @@ package com.example.PaymentService.controller;
 import com.example.PaymentService.dto.PaymentCancelDTO;
 import com.example.PaymentService.dto.PaymentDTO;
 import com.example.PaymentService.dto.PaymentRequestDTO;
+import com.example.PaymentService.dto.cancel.CancelDTO;
 import com.example.PaymentService.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -23,28 +25,28 @@ public class PaymentsApiController {
     public ResponseEntity<PaymentDTO> confirmPayment(
             @RequestBody PaymentRequestDTO paymentRequestDTO
     ) {
-        ResponseEntity<PaymentDTO> paymentDTOResponseEntity = paymentService
+        var responseEntityPaymentDTO = paymentService
                 .confirmPayment(paymentRequestDTO);
 
-        return paymentDTOResponseEntity;
+        return responseEntityPaymentDTO;
     }
 
     @PostMapping("/payment")
     public ResponseEntity<PaymentDTO> paymentKey(
             @RequestBody PaymentRequestDTO paymentRequestDTO
     ) {
-        ResponseEntity<PaymentDTO> paymentDTOResponseEntity = paymentService
+        var responseEntityPaymentDTO = paymentService
                 .findByPaymentKey(paymentRequestDTO);
 
-        return paymentDTOResponseEntity;
+        return responseEntityPaymentDTO;
     }
 
     @DeleteMapping("/cancel")
-    public ResponseEntity<HttpStatus> cancelPayment(
+    public ResponseEntity<List<CancelDTO>> cancelPayment(
             @RequestBody PaymentCancelDTO paymentCancelDTO
     ) {
-        paymentService.paymentCancel(paymentCancelDTO);
+        var cancelDTOList = paymentService.paymentCancel(paymentCancelDTO);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok(cancelDTOList);
     }
 }

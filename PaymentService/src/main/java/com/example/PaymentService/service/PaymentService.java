@@ -3,6 +3,7 @@ package com.example.PaymentService.service;
 import com.example.PaymentService.dto.PaymentCancelDTO;
 import com.example.PaymentService.dto.PaymentDTO;
 import com.example.PaymentService.dto.PaymentRequestDTO;
+import com.example.PaymentService.dto.cancel.CancelDTO;
 import com.example.PaymentService.entity.PaymentsEntity;
 import com.example.PaymentService.repository.PaymentsRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,9 @@ import org.springframework.web.client.RestClient;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -90,7 +93,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public void paymentCancel(PaymentCancelDTO paymentCancelDTO) {
+    public List<CancelDTO> paymentCancel(PaymentCancelDTO paymentCancelDTO) {
         String authorization = getAuthorizationSecretKey();
 
         ResponseEntity<PaymentDTO> paymentDTOResponseEntity = restClient.post()
@@ -110,6 +113,12 @@ public class PaymentService {
                 paymentCancelDTO.getPaymentKey(),
                 ZonedDateTime.now()
         );
+
+        var paymentDTO = paymentDTOResponseEntity.getBody();
+
+        var cancels = Objects.requireNonNull(paymentDTO).getCancels();
+
+        return Objects.isNull(cancels) ? new ArrayList<>() : cancels;
     }
 
     private String getAuthorizationSecretKey() {

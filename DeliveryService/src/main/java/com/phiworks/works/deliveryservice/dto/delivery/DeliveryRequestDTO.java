@@ -23,7 +23,7 @@ public class DeliveryRequestDTO {
 
     public Long referenceCode;
 
-    private String deliveryName;
+    private String deliveryCompany; //배달 업체
 
     public static DeliveryEntity of(DeliveryRequestDTO dto) {
         return DeliveryEntity.builder()
