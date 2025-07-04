@@ -11,6 +11,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeliveryResponseDTO {
+    private Long deliveryId;
+
     private String orderId;
 
     private String productName;
@@ -25,6 +27,7 @@ public class DeliveryResponseDTO {
 
     public static DeliveryResponseDTO of(DeliveryEntity entity) {
         return DeliveryResponseDTO.builder()
+                .deliveryId(entity.getId())
                 .orderId(entity.getOrderId())
                 .productName(entity.getProductName())
                 .productCount(entity.getProductCount())
