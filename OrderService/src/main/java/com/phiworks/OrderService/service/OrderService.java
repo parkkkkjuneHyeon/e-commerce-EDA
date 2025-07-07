@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -58,6 +59,7 @@ public class OrderService {
                 productId,
                 stockCountDTO
         );
+
         var deliveryResponseDTO = deliveryFeignClient.getMemberAddress(memberId).getFirst();
         // 4. 배송 시작
         log.info("finishOrder -> deliveryCompany : {}", deliveryCompany);
@@ -98,6 +100,19 @@ public class OrderService {
                 .deliveryId(savedOrdersEntity.getDeliveryId())
                 .createdAt(savedOrdersEntity.getCreatedAt())
                 .build();
+    }
+
+    public List<OrderResponseDTO> findAllByMemberId(Long memberId) {
+        var orderEntityList = orderRepository.findAllByMemberId(memberId);
+
+        return orderEntityList.stream().map(OrderResponseDTO::of).toList();
+    }
+
+    public OrderResponseDTO findById(String orderId) {
+        var orderEntity = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        return OrderResponseDTO.of(orderEntity);
     }
 
 

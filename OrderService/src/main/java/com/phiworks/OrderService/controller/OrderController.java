@@ -25,23 +25,22 @@ public class OrderController {
         return ResponseEntity.ok(orderResponseDTO);
     }
 
-    @GetMapping("/uers/{memberId}/orders")
+    @GetMapping("/users/{memberId}/orders")
     public ResponseEntity<List<OrderResponseDTO>> getOrders(
             @PathVariable Long memberId
     ) {
+        var orderResponseDTOList = orderService.findAllByMemberId(memberId);
 
-
-        return null;
+        return ResponseEntity.ok(orderResponseDTOList);
     }
 
     @GetMapping("/orders/order/{orderId}")
     public ResponseEntity<OrderResponseDTO> getOrder(
             @PathVariable String orderId
     ) {
+        var orderResponseDTO = orderService.findById(orderId);
 
-
-        return null;
+        return ResponseEntity.ok(orderResponseDTO);
     }
-
 
 }

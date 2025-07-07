@@ -1,6 +1,5 @@
 package com.phiworks.OrderService.controller;
 
-import com.phiworks.OrderService.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +17,6 @@ import java.util.UUID;
 public class OrderPaymentViewController {
     @Value("${spring.toss.clientKey}")
     private String clientKey;
-
-
-
 
 
     @GetMapping("/payments")
