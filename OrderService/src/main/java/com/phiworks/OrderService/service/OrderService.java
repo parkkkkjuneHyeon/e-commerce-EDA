@@ -49,6 +49,7 @@ public class OrderService {
         Long productCount = Long.parseLong(metadata.get("productCount").toString());
         Long memberId = Long.parseLong(metadata.get("memberId").toString());
         String deliveryCompany = metadata.get("deliveryCompany").toString();
+
         var stockCountDTO = StockCountDTO.builder()
                 .decrementStockCount(productCount)
                 .build();

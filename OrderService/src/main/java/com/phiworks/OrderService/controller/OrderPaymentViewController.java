@@ -33,6 +33,7 @@ public class OrderPaymentViewController {
             @RequestParam Long productId,
             @RequestParam Long productCount,
             @RequestParam Long memberId,
+            @RequestParam String deliveryCompany,
             @RequestParam String customerName,
             @RequestParam String customerEmail,
             @RequestParam(required = false) String customerMobilePhone
@@ -60,6 +61,7 @@ public class OrderPaymentViewController {
         //metadata
         model.addAttribute("productId", productId);
         model.addAttribute("memberId", memberId);
+        model.addAttribute("deliveryCompany", deliveryCompany);
         model.addAttribute("productCount", productCount);
 
         return "checkout";
