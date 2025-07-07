@@ -24,3 +24,17 @@ spring:
 
     widget:
       secretkey: ${TOSS_SECRETKEY:test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6}
+
+  kafka:
+    bootstrap-servers:
+      - kafka1:9092
+      - kafka2:9093
+      - kafka3:9094
+    consumer:
+      group-id: testgroup
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
