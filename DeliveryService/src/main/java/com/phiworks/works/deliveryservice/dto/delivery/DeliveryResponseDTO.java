@@ -23,6 +23,8 @@ public class DeliveryResponseDTO {
 
     private DeliveryStatus deliveryStatus;
 
+    private String deliveryCompany;
+
     public Long referenceCode;
 
     public static DeliveryResponseDTO of(DeliveryEntity entity) {
@@ -33,6 +35,7 @@ public class DeliveryResponseDTO {
                 .productCount(entity.getProductCount())
                 .address(entity.getAddress())
                 .deliveryStatus(entity.getDeliveryStatus())
+                .deliveryCompany(entity.getDeliveryCompany())
                 .referenceCode(entity.getReferenceCode())
                 .build();
     }

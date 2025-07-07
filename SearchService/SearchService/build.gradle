@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.3'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id "com.google.protobuf" version "0.9.4"
 }
 
 group = 'com.phiworks.works'
@@ -10,6 +11,11 @@ group = 'com.phiworks.works'
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
 	}
 }
 
@@ -22,6 +28,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'com.google.protobuf:protobuf-java:4.28.2'
+	implementation 'org.springframework.kafka:spring-kafka'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -29,4 +37,11 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+protobuf {
+	protoc {
+		// You still need protoc like in the non-Android case
+		artifact = 'com.google.protobuf:protoc:4.28.2'
+	}
 }

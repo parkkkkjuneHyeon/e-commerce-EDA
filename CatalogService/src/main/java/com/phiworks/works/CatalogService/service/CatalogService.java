@@ -3,15 +3,17 @@ package com.phiworks.works.CatalogService.service;
 
 import com.phiworks.works.CatalogService.common.util.CurrentTimeUtil;
 import com.phiworks.works.CatalogService.common.util.StockCountManager;
-import com.phiworks.works.CatalogService.dto.StockCountDTO;
 import com.phiworks.works.CatalogService.dto.ProductRequestDTO;
 import com.phiworks.works.CatalogService.dto.ProductResponseDTO;
-import com.phiworks.works.CatalogService.feignclient.SearchClient;
-import com.phiworks.works.CatalogService.feignclient.dto.SearchServiceDTO;
+import com.phiworks.works.CatalogService.dto.StockCountDTO;
 import com.phiworks.works.CatalogService.model.cassandra.entity.ProductEntity;
 import com.phiworks.works.CatalogService.model.cassandra.repository.ProductRepository;
 import com.phiworks.works.CatalogService.model.mysql.repository.SellerProductRepository;
+import edaordersystem.protobuf.EdaMessage;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +23,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CatalogService {
 
+    private static final Logger log = LoggerFactory.getLogger(CatalogService.class);
     private final ProductRepository productRepository;
     private final SellerProductRepository sellerProductRepository;
-    private final SearchClient searchClient;
+    private final KafkaTemplate<String, byte[]> kafkaTemplate;
 
     @Transactional
     public ProductResponseDTO registerProduct(
@@ -40,12 +43,13 @@ public class CatalogService {
 
         var savedProductEntity = productRepository.save(productEntity);
 
-        var searchServiceDTO = SearchServiceDTO.builder()
-                .productId(savedProductEntity.getId())
-                .tags(savedProductEntity.getTags())
-                .build();
 
-        searchClient.registerProduct(searchServiceDTO);
+        var message = EdaMessage.ProductTags.newBuilder()
+                .setProductId(savedSellerProductEntity.getId())
+                .addAllTags(savedProductEntity.getTags())
+                .build();
+        log.info("[product_tags_added]");
+        kafkaTemplate.send("product_tags_added", message.toByteArray());
 
         return ProductResponseDTO.getProductResponseDTO(savedProductEntity);
     }
@@ -57,12 +61,12 @@ public class CatalogService {
         sellerProductRepository.deleteById(productId);
         productRepository.deleteById(productId);
 
-        var searchServiceDTO = SearchServiceDTO.builder()
-                .productId(productEntity.getId())
-                .tags(productEntity.getTags())
+        var message = EdaMessage.ProductTags.newBuilder()
+                .setProductId(productId)
+                .addAllTags(productEntity.getTags())
                 .build();
-
-        searchClient.deleteProduct(searchServiceDTO);
+        log.info("[product_tags_removed]");
+        kafkaTemplate.send("product_tags_removed", message.toByteArray());
     }
 
     public ProductResponseDTO getProductById(Long productId) {
