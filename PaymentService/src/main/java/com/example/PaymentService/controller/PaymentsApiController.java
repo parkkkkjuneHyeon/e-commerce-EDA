@@ -21,15 +21,15 @@ public class PaymentsApiController {
     private final PaymentService paymentService;
 
 
-    @PostMapping("/confirm")
-    public ResponseEntity<PaymentDTO> confirmPayment(
-            @RequestBody PaymentRequestDTO paymentRequestDTO
-    ) {
-        var responseEntityPaymentDTO = paymentService
-                .confirmPayment(paymentRequestDTO);
-
-        return responseEntityPaymentDTO;
-    }
+//    @PostMapping("/confirm")
+//    public ResponseEntity<PaymentDTO> confirmPayment(
+//            @RequestBody PaymentRequestDTO paymentRequestDTO
+//    ) {
+//        var responseEntityPaymentDTO = paymentService
+//                .confirmPayment(paymentRequestDTO);
+//
+//        return ResponseEntity.ok(responseEntityPaymentDTO);
+//    }
 
     @PostMapping("/payment")
     public ResponseEntity<PaymentDTO> paymentKey(

@@ -41,7 +41,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public ResponseEntity<PaymentDTO> confirmPayment(PaymentRequestDTO paymentRequestDTO) {
+    public PaymentDTO confirmPayment(PaymentRequestDTO paymentRequestDTO) {
 
         // 토스페이먼츠 API는 시크릿 키를 사용자 ID로 사용하고, 비밀번호는 사용하지 않습니다.
         // 비밀번호가 없다는 것을 알리기 위해 시크릿 키 뒤에 콜론을 추가합니다.
@@ -69,7 +69,7 @@ public class PaymentService {
 
         paymentsRepository.save(paymentsEntity);
 
-        return paymentResponseEntity;
+        return paymentResponseEntity.getBody();
     }
 
     public ResponseEntity<PaymentDTO> findByPaymentKey(PaymentRequestDTO paymentRequestDTO) {

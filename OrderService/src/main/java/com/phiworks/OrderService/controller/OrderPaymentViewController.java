@@ -32,7 +32,8 @@ public class OrderPaymentViewController {
             @RequestParam String deliveryCompany,
             @RequestParam String customerName,
             @RequestParam String customerEmail,
-            @RequestParam(required = false) String customerMobilePhone
+            @RequestParam(required = false) String customerMobilePhone,
+            @RequestParam String address
     ) {
         String baseUrl =String.format("%s://%s:%d",
                 request.getScheme(),
@@ -59,6 +60,7 @@ public class OrderPaymentViewController {
         model.addAttribute("memberId", memberId);
         model.addAttribute("deliveryCompany", deliveryCompany);
         model.addAttribute("productCount", productCount);
+        model.addAttribute("address", address);
 
         return "checkout";
     }

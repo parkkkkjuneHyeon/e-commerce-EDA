@@ -4,6 +4,7 @@ import com.phiworks.OrderService.dto.orders.OrderRequestDTO;
 import com.phiworks.OrderService.dto.orders.OrderResponseDTO;
 import com.phiworks.OrderService.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,12 +18,12 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/finish-order")
-    public ResponseEntity<OrderResponseDTO> finishOrder(
+    public ResponseEntity<HttpStatus> finishOrder(
             @RequestBody OrderRequestDTO requestDTO
     ) {
-        var orderResponseDTO = orderService.finishOrder(requestDTO);
+        orderService.finishOrder(requestDTO);
 
-        return ResponseEntity.ok(orderResponseDTO);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/users/{memberId}/orders")

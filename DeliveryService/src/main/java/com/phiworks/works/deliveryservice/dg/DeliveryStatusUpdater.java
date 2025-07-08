@@ -4,8 +4,10 @@ package com.phiworks.works.deliveryservice.dg;
 import com.phiworks.works.deliveryservice.entity.DeliveryEntity;
 import com.phiworks.works.deliveryservice.repository.DeliveryRepository;
 import com.phiworks.works.deliveryservice.type.DeliveryStatus;
+import edaordersystem.protobuf.EdaMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +19,10 @@ import java.util.List;
 public class DeliveryStatusUpdater {
     private final DeliveryRepository deliveryRepository;
 
-    @Scheduled(fixedRate = 20000)
+    private final KafkaTemplate<String, byte[]> kafkaTemplate;
+
+
+    @Scheduled(fixedRate = 200000)
     public void deliveryStatusUpdate() {
         log.info("--------Start deliveryStatusUpdate--------");
         List<DeliveryEntity> requestStatusDeliveryEntities = deliveryRepository
@@ -25,6 +30,18 @@ public class DeliveryStatusUpdater {
 
         requestStatusDeliveryEntities.forEach(deliveryEntity -> {
             deliveryEntity.setDeliveryStatus(DeliveryStatus.IN_DELIVERY);
+
+            var deliveryResponseMessage = EdaMessage.deliveryResponseV1.newBuilder()
+                    .setDeliveryId(deliveryEntity.getId())
+                    .setOrderId(deliveryEntity.getOrderId())
+                    .setDeliveryStatus(deliveryEntity.getDeliveryStatus().name())
+                    .build();
+
+            kafkaTemplate.send(
+                    "delivery-status-update",
+                    deliveryResponseMessage.toByteArray()
+            );
+
             deliveryRepository.save(deliveryEntity);
         });
 
@@ -33,6 +50,18 @@ public class DeliveryStatusUpdater {
 
         inDeliveryStatusDeliveryEntities.forEach(deliveryEntity -> {
             deliveryEntity.setDeliveryStatus(DeliveryStatus.DONE);
+
+            var deliveryResponseMessage = EdaMessage.deliveryResponseV1.newBuilder()
+                    .setDeliveryId(deliveryEntity.getId())
+                    .setOrderId(deliveryEntity.getOrderId())
+                    .setDeliveryStatus(deliveryEntity.getDeliveryStatus().name())
+                    .build();
+
+            kafkaTemplate.send(
+                    "delivery-status-update",
+                    deliveryResponseMessage.toByteArray()
+            );
+
             deliveryRepository.save(deliveryEntity);
         });
         log.info("--------end deliveryStatusUpdate--------");
