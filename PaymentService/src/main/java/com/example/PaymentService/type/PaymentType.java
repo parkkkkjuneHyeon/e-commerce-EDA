@@ -1,7 +1,9 @@
 package com.example.PaymentService.type;
 
+import com.example.PaymentService.exception.CustomException;
 import lombok.Getter;
 import lombok.ToString;
+import org.springframework.http.HttpStatus;
 
 /**
  * 결제 타입 Enum
@@ -19,4 +21,17 @@ public enum PaymentType {
     PaymentType(String description) {
         this.description = description;
     }
+
+    public static PaymentType getPaymentType(String description) {
+        for (PaymentType paymentType : PaymentType.values()) {
+            if (paymentType.description.equals(description.toLowerCase())) {
+                return paymentType;
+            }
+        }
+        throw new CustomException(
+                "결제방식을 잘못 입력하셨습니다. : " + description,
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
 }

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class PaymentEventListener {
     private static final Logger log = LoggerFactory.getLogger(PaymentEventListener.class);
     private final KafkaTemplate<String, byte[]> kafkaTemplate;
-    private final PaymentService paymentService;
+    private final PaymentUsecaseService paymentUsecaseService;
 
     @KafkaListener(topics = "payment-confirm-request")
     public void paymentConfirmRequestEventListener(byte[] message) throws InvalidProtocolBufferException {
@@ -31,7 +31,7 @@ public class PaymentEventListener {
                 .amount(object.getAmount())
                 .build();
 
-        var paymentEntity = paymentService.confirmPayment(paymentRequestDTO);
+        var paymentEntity = paymentUsecaseService.confirmPayment(paymentRequestDTO);
 
         var paymentConfirmResponseMessage = EdaMessage.paymentResponseV1
                 .newBuilder()

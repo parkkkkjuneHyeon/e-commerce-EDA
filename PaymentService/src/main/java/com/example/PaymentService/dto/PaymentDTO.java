@@ -98,14 +98,25 @@ public class PaymentDTO {
         return PaymentsEntity.builder()
                 .orderId(paymentDTO.getOrderId())
                 .paymentKey(paymentDTO.getPaymentKey())
-                .paymentType(PaymentType.valueOf(paymentDTO.type.toUpperCase()))
-                .paymentMethod(PaymentMethod.getPaymentMethod(paymentDTO.method))
+                .paymentType(PaymentType.getPaymentType(paymentDTO.getType()))
+                .paymentMethod(PaymentMethod.getPaymentMethod(paymentDTO.getMethod()))
                 .currency(paymentDTO.currency)
                 .totalAmount(paymentDTO.totalAmount)
-                .paymentStatus(PaymentStatus.valueOf(paymentDTO.status.toUpperCase()))
+                .paymentStatus(PaymentStatus.getPaymentStatus(paymentDTO.getStatus()))
                 .createdAt(paymentDTO.requestedAt)
                 .approvedAt(paymentDTO.approvedAt)
                 .build();
+    }
+    public static PaymentsEntity of(PaymentsEntity paymentsEntity, PaymentDTO paymentDTO) {
+
+        paymentsEntity.setPaymentType(PaymentType.getPaymentType(paymentDTO.getType()));
+        paymentsEntity.setPaymentMethod(PaymentMethod.getPaymentMethod(paymentDTO.getMethod()));
+        paymentsEntity.setCurrency(paymentDTO.getCurrency());
+        paymentsEntity.setPaymentStatus(PaymentStatus.getPaymentStatus(paymentDTO.getStatus()));
+        paymentsEntity.setCreatedAt(paymentDTO.requestedAt);
+        paymentsEntity.setApprovedAt(paymentDTO.approvedAt);
+
+        return paymentsEntity;
     }
 
     /**

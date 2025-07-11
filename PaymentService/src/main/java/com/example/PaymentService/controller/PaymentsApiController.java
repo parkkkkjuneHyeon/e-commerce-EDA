@@ -1,10 +1,10 @@
 package com.example.PaymentService.controller;
 
 import com.example.PaymentService.dto.PaymentCancelDTO;
-import com.example.PaymentService.dto.PaymentDTO;
 import com.example.PaymentService.dto.PaymentRequestDTO;
+import com.example.PaymentService.dto.PaymentResponseDTO;
 import com.example.PaymentService.dto.cancel.CancelDTO;
-import com.example.PaymentService.service.PaymentService;
+import com.example.PaymentService.service.PaymentUsecaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PaymentsApiController {
 
-    private final PaymentService paymentService;
+    private final PaymentUsecaseService paymentUsecaseService;
 
 
 //    @PostMapping("/confirm")
@@ -32,20 +32,20 @@ public class PaymentsApiController {
 //    }
 
     @PostMapping("/payment")
-    public ResponseEntity<PaymentDTO> paymentKey(
+    public ResponseEntity<PaymentResponseDTO> paymentKey(
             @RequestBody PaymentRequestDTO paymentRequestDTO
     ) {
-        var responseEntityPaymentDTO = paymentService
+        var PaymentDTO = paymentUsecaseService
                 .findByPaymentKey(paymentRequestDTO);
 
-        return responseEntityPaymentDTO;
+        return ResponseEntity.ok(PaymentDTO);
     }
 
     @DeleteMapping("/cancel")
     public ResponseEntity<List<CancelDTO>> cancelPayment(
             @RequestBody PaymentCancelDTO paymentCancelDTO
     ) {
-        var cancelDTOList = paymentService.paymentCancel(paymentCancelDTO);
+        var cancelDTOList = paymentUsecaseService.paymentCancel(paymentCancelDTO);
 
         return ResponseEntity.ok(cancelDTOList);
     }
