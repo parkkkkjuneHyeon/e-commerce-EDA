@@ -36,7 +36,7 @@ public class DeliveryController {
     }
 
     @GetMapping("/deliveries/{deliveryId}")
-    public ResponseEntity<DeliveryResponseDTO> findDeliveries(@PathVariable Long deliveryId) {
+    public ResponseEntity<DeliveryResponseDTO> findDelivery(@PathVariable Long deliveryId) {
         return ResponseEntity.ok(deliveryService.getDelivery(deliveryId));
     }
 

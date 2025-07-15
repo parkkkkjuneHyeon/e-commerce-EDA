@@ -1,14 +1,16 @@
 package com.example.PaymentService.controller;
 
 import com.example.PaymentService.dto.PaymentCancelDTO;
-import com.example.PaymentService.dto.PaymentDTO;
 import com.example.PaymentService.dto.PaymentRequestDTO;
-import com.example.PaymentService.service.PaymentService;
+import com.example.PaymentService.dto.PaymentResponseDTO;
+import com.example.PaymentService.dto.cancel.CancelDTO;
+import com.example.PaymentService.usecase.PaymentUsecaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -16,35 +18,35 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class PaymentsApiController {
 
-    private final PaymentService paymentService;
+    private final PaymentUsecaseService paymentUsecaseService;
 
 
-    @PostMapping("/confirm")
-    public ResponseEntity<PaymentDTO> confirmPayment(
-            @RequestBody PaymentRequestDTO paymentRequestDTO
-    ) {
-        ResponseEntity<PaymentDTO> paymentDTOResponseEntity = paymentService
-                .confirmPayment(paymentRequestDTO);
-
-        return paymentDTOResponseEntity;
-    }
+//    @PostMapping("/confirm")
+//    public ResponseEntity<PaymentDTO> confirmPayment(
+//            @RequestBody PaymentRequestDTO paymentRequestDTO
+//    ) {
+//        var responseEntityPaymentDTO = paymentService
+//                .confirmPayment(paymentRequestDTO);
+//
+//        return ResponseEntity.ok(responseEntityPaymentDTO);
+//    }
 
     @PostMapping("/payment")
-    public ResponseEntity<PaymentDTO> paymentKey(
+    public ResponseEntity<PaymentResponseDTO> paymentKey(
             @RequestBody PaymentRequestDTO paymentRequestDTO
     ) {
-        ResponseEntity<PaymentDTO> paymentDTOResponseEntity = paymentService
+        var PaymentDTO = paymentUsecaseService
                 .findByPaymentKey(paymentRequestDTO);
 
-        return paymentDTOResponseEntity;
+        return ResponseEntity.ok(PaymentDTO);
     }
 
     @DeleteMapping("/cancel")
-    public ResponseEntity<HttpStatus> cancelPayment(
+    public ResponseEntity<List<CancelDTO>> cancelPayment(
             @RequestBody PaymentCancelDTO paymentCancelDTO
     ) {
-        paymentService.paymentCancel(paymentCancelDTO);
+        var cancelDTOList = paymentUsecaseService.paymentCancel(paymentCancelDTO);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok(cancelDTOList);
     }
 }

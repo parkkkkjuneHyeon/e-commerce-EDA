@@ -1,13 +1,17 @@
 package com.phiworks.works.deliveryservice.dg.enums;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public enum DeliveryFields {
     LOTTE,
     HANJIN;
 
 
-    public static DeliveryFields getDeliveryFields(String deliveryName) {
+    public static DeliveryFields getDeliveryFields(String deliveryCompany) {
         try {
-            return DeliveryFields.valueOf(deliveryName.toUpperCase());
+            log.info("getDeliveryFields {}", deliveryCompany);
+            return DeliveryFields.valueOf(deliveryCompany.toUpperCase());
         } catch (IllegalArgumentException e) {
             return null;
         }

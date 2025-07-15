@@ -3,7 +3,6 @@ package com.phiworks.works.deliveryservice.dg;
 import com.phiworks.works.deliveryservice.dg.adapter.DeliveryAdapter;
 import com.phiworks.works.deliveryservice.dg.enums.DeliveryFields;
 import com.phiworks.works.deliveryservice.dto.delivery.DeliveryRequestDTO;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -26,17 +25,17 @@ public class DeliveryStrategy {
     public Long processDelivery(
             DeliveryRequestDTO deliveryRequestDTO) {
 
-        String deliveryName = deliveryRequestDTO.getDeliveryName();
-        DeliveryAdapter deliveryAdapter = getDeliveryAdapter(deliveryName);
+        String deliveryCompany = deliveryRequestDTO.getDeliveryCompany();
+        DeliveryAdapter deliveryAdapter = getDeliveryAdapter(deliveryCompany);
 
         if (deliveryAdapter == null)
-            throw new IllegalArgumentException("No delivery adapter found for name " + deliveryName);
+            throw new IllegalArgumentException("No delivery adapter found for name " + deliveryCompany);
 
         return deliveryAdapter.processDelivery(deliveryRequestDTO);
     }
 
-    private DeliveryAdapter getDeliveryAdapter(String deliveryName) {
-        DeliveryFields delivery = DeliveryFields.getDeliveryFields(deliveryName);
+    private DeliveryAdapter getDeliveryAdapter(String deliveryCompany) {
+        DeliveryFields delivery = DeliveryFields.getDeliveryFields(deliveryCompany);
         return deliveryAdaptersMap.get(delivery);
     }
 }
