@@ -33,8 +33,9 @@ public enum PaymentStatus {
                 return status;
             }
         }
-        throw new CustomException(
-                "paymentStatus를 잘못 입력하셨습니다. : " + paymentStatus,
-                HttpStatus.BAD_REQUEST);
+        throw CustomException.builder()
+                .httpStatus(HttpStatus.BAD_REQUEST)
+                .message("paymentStatus를 잘못 입력하셨습니다. : " + paymentStatus)
+                .build();
     }
 }

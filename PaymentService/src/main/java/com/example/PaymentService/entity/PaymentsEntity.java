@@ -36,19 +36,18 @@ public class PaymentsEntity {
     private String paymentKey;
 
     @Column(nullable=false)
-    private PaymentType paymentType;
-
-    @Column(nullable = false)
-    private PaymentMethod paymentMethod;
-
-    @Column(nullable=false)
-    private String currency;
-
-    @Column(nullable=false)
     private Long totalAmount;
 
     @Column(nullable = false)
     private PaymentStatus paymentStatus;
+
+    private PaymentType paymentType;
+
+    @Column
+    private PaymentMethod paymentMethod;
+
+    @Column
+    private String currency;
 
     private ZonedDateTime approvedAt;
 

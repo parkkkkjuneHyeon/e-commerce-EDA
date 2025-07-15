@@ -171,7 +171,11 @@ services:
       start_period: 30s
 
   member-service:
-    image: member-service
+    build:
+      context: ./MemberService
+      dockerfile: Dockerfile
+    container_name: member-service
+    # image: member-service
     ports:
       - "8081:8080"
     depends_on:
@@ -187,7 +191,11 @@ services:
       - eda-network
 
   payment-service:
-    image: payment-service
+    build:
+      context: ./PaymentService
+      dockerfile: Dockerfile
+    container_name: payment-service
+    # image: payment-service
     ports:
       - "8082:8080"
     depends_on:
@@ -203,7 +211,11 @@ services:
       - eda-network
 
   delivery-service:
-    image: delivery-service
+    build:
+      context: ./DeliveryService
+      dockerfile: Dockerfile
+    container_name: delivery-service
+    # image: delivery-service
     ports:
       - "8083:8080"
     depends_on:
@@ -219,7 +231,11 @@ services:
       - eda-network
 
   search-service:
-    image: search-service
+    build:
+      context: ./SearchService
+      dockerfile: Dockerfile
+    container_name: search-service
+    # image: search-service
     ports: 
       - "8084:8080"
     depends_on: 
@@ -231,7 +247,11 @@ services:
       - eda-network
 
   catalog-service:
-    image: catalog-service
+    build:
+      context: ./CatalogService
+      dockerfile: Dockerfile
+    container_name: catalog-service
+    # image: catalog-service
     ports:
       - "8085:8080"
     depends_on: 
@@ -253,7 +273,11 @@ services:
       - eda-network
   
   order-service:
-    image: order-service
+    build:
+      context: ./OrderService
+      dockerfile: Dockerfile
+    container_name: order-service
+    # image: order-service
     ports:
       - "8086:8080"
     depends_on:

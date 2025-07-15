@@ -4,7 +4,7 @@ import com.example.PaymentService.dto.PaymentCancelDTO;
 import com.example.PaymentService.dto.PaymentRequestDTO;
 import com.example.PaymentService.dto.PaymentResponseDTO;
 import com.example.PaymentService.dto.cancel.CancelDTO;
-import com.example.PaymentService.service.PaymentUsecaseService;
+import com.example.PaymentService.usecase.PaymentUsecaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

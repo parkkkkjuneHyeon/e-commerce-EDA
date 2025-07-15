@@ -5,17 +5,16 @@ import com.example.PaymentService.dto.PaymentDTO;
 import com.example.PaymentService.dto.PaymentRequestDTO;
 import com.example.PaymentService.dto.PaymentResponseDTO;
 import com.example.PaymentService.entity.PaymentsEntity;
-import com.example.PaymentService.exception.CustomException;
+import com.example.PaymentService.exception.payment.FailSavedPaymentException;
 import com.example.PaymentService.exception.payment.PaymentException;
 import com.example.PaymentService.repository.PaymentsRepository;
+import com.example.PaymentService.type.PaymentMethod;
 import com.example.PaymentService.type.PaymentStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.ZonedDateTime;
 
 @Slf4j
 @Service
@@ -25,25 +24,35 @@ public class PaymentService {
     private final PaymentsRepository paymentsRepository;
 
 
-
     @Transactional
-    protected void updatePaymentCompleted(PaymentsEntity processPaymentsEntity, PaymentDTO paymentDTO) {
-        var paymentsEntity = PaymentDTO.of(processPaymentsEntity, paymentDTO);
+    public void updatePaymentCompleted(PaymentsEntity processPaymentsEntity, PaymentDTO paymentDTO) {
+        try {
+            var donePaymentsEntity = PaymentDTO.of(processPaymentsEntity, paymentDTO);
 
-        paymentsRepository.save(paymentsEntity);
+            paymentsRepository.save(donePaymentsEntity);
+
+            log.info("updatePaymentCompleted 완료");
+        }catch (Exception e) {
+            log.error("updatePaymentCompleted save 실패 {}", e);
+
+            throw FailSavedPaymentException.builder()
+                    .httpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .message("결제 과정 중 이상이 생겨 저장을 실패했습니다.")
+                    .build();
+        }
     }
 
     @Transactional
-    protected PaymentsEntity processPayment(PaymentRequestDTO paymentRequestDTO) {
+    public PaymentsEntity processPayment(PaymentRequestDTO paymentRequestDTO) {
         try {
             var paymentEntity = PaymentsEntity.builder()
                     .orderId(paymentRequestDTO.getOrderId())
-                    .memberId(paymentRequestDTO.getMemberId())
                     .totalAmount(paymentRequestDTO.getAmount())
                     .paymentStatus(PaymentStatus.READY)
                     .paymentKey(paymentRequestDTO.getPaymentKey())
                     .build();
 
+            log.info("processPayment : {}", paymentEntity);
             return paymentsRepository.save(paymentEntity);
 
         }catch (RuntimeException e) {
@@ -61,13 +70,13 @@ public class PaymentService {
                                 entity.getPaymentKey(),
                                 entity.getPaymentStatus()
                         );
-                        throw CustomException.builder()
+                        throw PaymentException.builder()
                                 .httpStatus(HttpStatus.BAD_REQUEST)
                                 .message(entity.getPaymentStatus().toString() + "이므로 잘못된 요청입니다.")
                                 .build();
                     })
                     .orElseThrow(() ->
-                            CustomException.builder()
+                            PaymentException.builder()
                             .httpStatus(HttpStatus.BAD_REQUEST)
                             .message("데이터 정합성 오류")
                             .build()
@@ -81,6 +90,7 @@ public class PaymentService {
 
         return PaymentResponseDTO.of(paymentEntity);
     }
+
     public PaymentResponseDTO findByPaymentKey(String paymentKey) {
         var paymentEntity = paymentsRepository.findByPaymentKey(paymentKey)
                 .orElseThrow(() -> new IllegalArgumentException("wrong payment key"));
@@ -88,7 +98,7 @@ public class PaymentService {
         return PaymentResponseDTO.of(paymentEntity);
     }
 
-    protected void paymentCancel(PaymentCancelDTO paymentCancelDTO) {
+    public void paymentCancel(PaymentCancelDTO paymentCancelDTO) {
         paymentsRepository.softDeleteByPaymentKey(
                 paymentCancelDTO.getMemberId(),
                 paymentCancelDTO.getPaymentKey(),

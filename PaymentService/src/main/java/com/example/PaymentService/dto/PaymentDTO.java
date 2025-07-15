@@ -108,7 +108,8 @@ public class PaymentDTO {
                 .build();
     }
     public static PaymentsEntity of(PaymentsEntity paymentsEntity, PaymentDTO paymentDTO) {
-
+        Map<String, String> metaData = paymentDTO.getMetadata();
+        paymentsEntity.setMemberId(Long.parseLong(metaData.get("memberId").toString()));
         paymentsEntity.setPaymentType(PaymentType.getPaymentType(paymentDTO.getType()));
         paymentsEntity.setPaymentMethod(PaymentMethod.getPaymentMethod(paymentDTO.getMethod()));
         paymentsEntity.setCurrency(paymentDTO.getCurrency());
