@@ -79,9 +79,9 @@ public class PaymentUsecaseService {
 
             cancels.forEach(cancel -> {
 
-                var paymentStatus = PaymentStatus.getPaymentStatus(cancel.getCancelStatus());
+                String cancelStatus = cancel.getCancelStatus();
 
-                if(paymentStatus.equals(PaymentStatus.CANCELED)) {
+                if("DONE".equals(cancelStatus)) {
                     var cancelDTO = PaymentCancelDTO.builder()
                             .memberId(paymentCancelDTO.getMemberId())
                             .paymentKey(paymentCancelDTO.getPaymentKey())
