@@ -1,18 +1,20 @@
-package com.example.PaymentService.service;
+package com.example.PaymentService.usecase;
 
 import com.example.PaymentService.dto.PaymentCancelDTO;
 import com.example.PaymentService.dto.PaymentDTO;
 import com.example.PaymentService.dto.PaymentRequestDTO;
 import com.example.PaymentService.dto.PaymentResponseDTO;
 import com.example.PaymentService.dto.cancel.CancelDTO;
+import com.example.PaymentService.exception.payment.FailSavedPaymentException;
+import com.example.PaymentService.exception.payment.NotEqualsAmountException;
 import com.example.PaymentService.exception.payment.PaymentException;
 import com.example.PaymentService.pg.PaymentGatewayService;
+import com.example.PaymentService.service.PaymentService;
 import com.example.PaymentService.type.PaymentStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,27 +30,50 @@ public class PaymentUsecaseService {
 
     public PaymentDTO confirmPayment(PaymentRequestDTO paymentRequestDTO) {
         // 결제 생성
+        log.info("confirmPayment 시작");
         var paymentsEntity = paymentService.processPayment(paymentRequestDTO);
 
-        // 토스페이먼츠 API는 시크릿 키를 사용자 ID로 사용하고, 비밀번호는 사용하지 않습니다.
-        // 비밀번호가 없다는 것을 알리기 위해 시크릿 키 뒤에 콜론을 추가합니다.
         try {
-            var paymentDTO = paymentGatewayService.confirmPayment(paymentRequestDTO);
 
+            var paymentDTO = paymentGatewayService.confirmPayment(paymentRequestDTO);
+            log.info("compareAmount 시작");
             compareAmount(paymentsEntity.getTotalAmount(), paymentDTO.getTotalAmount());
 
             paymentService.updatePaymentCompleted(paymentsEntity, paymentDTO);
-
+            log.info("confirmPayment 완료");
             return paymentDTO;
 
-        }catch (Exception e) {
+        }
+        catch (NotEqualsAmountException | FailSavedPaymentException e) {
+            //금액 및 저장 문제로 다시 결제 취소
+            var cancelRequestDTO = PaymentCancelDTO.builder()
+                    .paymentKey(paymentRequestDTO.getPaymentKey())
+                    .cancelAmount(paymentRequestDTO.getAmount())
+                    .cancelReason(e.getMessage())
+                    .build();
+            HttpStatus httpStatus = e.getHttpStatus();
+            log.error("NotEqualsAmountException | FailSavedPaymentException {}", e.getMessage(), e);
+            paymentCancel(cancelRequestDTO);
+            throw PaymentException.builder()
+                    .httpStatus(httpStatus)
+                    .message(e.getMessage())
+                    .build();
 
-            throw new RuntimeException("결제 처리 실패", e);
+        }catch (PaymentException e) {
+            HttpStatus httpStatus = e.getHttpStatus();
+            log.error("confirmPayment {}", e.getMessage(), e);
+
+            throw PaymentException.builder()
+                    .httpStatus(httpStatus)
+                    .message(e.getMessage())
+                    .build();
         }
     }
 
-    @Transactional
     public List<CancelDTO> paymentCancel(PaymentCancelDTO paymentCancelDTO) {
+
+        validateCancelableStatus(paymentCancelDTO.getPaymentKey());
+
         try {
             var cancels = paymentGatewayService.paymentCancel(paymentCancelDTO);
 
@@ -67,12 +92,16 @@ public class PaymentUsecaseService {
             });
             return Objects.isNull(cancels) ? new ArrayList<CancelDTO>() : cancels;
 
-        }catch (Exception e) {
-
+        }catch (PaymentException e) {
             var paymentResponseDTO = paymentService
                     .findByPaymentKey(paymentCancelDTO.getPaymentKey());
 
-            throw new RuntimeException("결제 취소 실패 : " + paymentResponseDTO.getPaymentStatus());
+            log.error("결제 취소 실패 : {}",paymentResponseDTO.getPaymentStatus(), e);
+
+            throw PaymentException.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("결제 취소 실패 : " + paymentResponseDTO.getPaymentStatus())
+                    .build();
         }
     }
 
@@ -85,10 +114,26 @@ public class PaymentUsecaseService {
     }
 
     protected void compareAmount(Long requestAmount, Long confirmResponseAmount) {
-        if(!requestAmount.equals(confirmResponseAmount))
-            throw PaymentException.builder()
+        log.info("compareAmount requestAmount:{} and confirmResponseAmount:{}"
+                , requestAmount, confirmResponseAmount);
+
+        if(!requestAmount.equals(confirmResponseAmount)) {
+            throw NotEqualsAmountException.builder()
                     .httpStatus(HttpStatus.BAD_REQUEST)
                     .message("결제정보가 맞지 않습니다.")
+                    .build();
+
+        }
+    }
+
+    protected void validateCancelableStatus(String paymentKey) {
+        var cancelPaymentEntity = paymentService.findByPaymentKey(paymentKey);
+        PaymentStatus status = cancelPaymentEntity.getPaymentStatus();
+
+        if(status.equals(PaymentStatus.CANCELED))
+            throw PaymentException.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("이미 결제가 취소되었습니다. : " + status.name())
                     .build();
     }
 }

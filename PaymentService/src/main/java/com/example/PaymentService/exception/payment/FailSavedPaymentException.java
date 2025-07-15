@@ -4,9 +4,9 @@ package com.example.PaymentService.exception.payment;
 import com.example.PaymentService.exception.CustomException;
 import org.springframework.http.HttpStatus;
 
-public class PaymentException extends CustomException {
+public class FailSavedPaymentException extends CustomException {
 
-    public PaymentException(HttpStatus httpStatus, String message) {
+    public FailSavedPaymentException(HttpStatus httpStatus, String message) {
         super(httpStatus, message);
     }
 }

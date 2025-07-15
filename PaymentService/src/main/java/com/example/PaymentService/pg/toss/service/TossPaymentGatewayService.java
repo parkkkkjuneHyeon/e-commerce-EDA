@@ -5,9 +5,11 @@ import com.example.PaymentService.dto.PaymentDTO;
 import com.example.PaymentService.dto.PaymentRequestDTO;
 import com.example.PaymentService.dto.cancel.CancelDTO;
 import com.example.PaymentService.pg.PaymentGatewayService;
+import com.example.PaymentService.pg.error.RestErrorHandler;
 import com.example.PaymentService.pg.toss.properties.TossProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -38,6 +40,8 @@ public class TossPaymentGatewayService implements PaymentGatewayService {
                 })
                 .body(paymentRequestDTO)
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, RestErrorHandler::handleClientError)
+                .onStatus(HttpStatusCode::is5xxServerError, RestErrorHandler::handleServerError)
                 .toEntity(PaymentDTO.class);
 
         // 결제를 승인하면 결제수단에서 금액이 차감돼요.
@@ -61,6 +65,8 @@ public class TossPaymentGatewayService implements PaymentGatewayService {
                     header.add("Authorization", authorizations);
                 })
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, RestErrorHandler::handleClientError)
+                .onStatus(HttpStatusCode::is5xxServerError, RestErrorHandler::handleServerError)
                 .toEntity(PaymentDTO.class);
 
         log.info("payment PaymentKey 조회 응답 : {} ", Objects.requireNonNull(paymentResponse.getBody()));
@@ -80,6 +86,8 @@ public class TossPaymentGatewayService implements PaymentGatewayService {
                 })
                 .body(paymentCancelDTO)
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, RestErrorHandler::handleClientError)
+                .onStatus(HttpStatusCode::is5xxServerError, RestErrorHandler::handleServerError)
                 .toEntity(PaymentDTO.class);
 
         log.info("payment cancel 응답 : {}", paymentDTOResponse.getBody());

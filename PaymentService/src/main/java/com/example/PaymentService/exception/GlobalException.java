@@ -1,6 +1,7 @@
 package com.example.PaymentService.exception;
 
 import com.example.PaymentService.exception.dto.ExceptionResponseDTO;
+import com.example.PaymentService.exception.payment.NotEqualsAmountException;
 import com.example.PaymentService.exception.payment.PaymentException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,6 @@ import java.time.LocalDateTime;
 @Slf4j
 @ControllerAdvice
 public class GlobalException {
-
 
 
     @ExceptionHandler(PaymentException.class)

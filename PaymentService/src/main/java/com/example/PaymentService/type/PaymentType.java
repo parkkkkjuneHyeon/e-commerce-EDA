@@ -24,14 +24,13 @@ public enum PaymentType {
 
     public static PaymentType getPaymentType(String description) {
         for (PaymentType paymentType : PaymentType.values()) {
-            if (paymentType.description.equals(description.toLowerCase())) {
+            if (paymentType.name().equals(description.toUpperCase())) {
                 return paymentType;
             }
         }
-        throw new CustomException(
-                "결제방식을 잘못 입력하셨습니다. : " + description,
-                HttpStatus.BAD_REQUEST
-        );
+        throw CustomException.builder()
+                .httpStatus(HttpStatus.BAD_REQUEST)
+                .message("결제방식을 잘못 입력하셨습니다. : " + description)
+                .build();
     }
-
 }

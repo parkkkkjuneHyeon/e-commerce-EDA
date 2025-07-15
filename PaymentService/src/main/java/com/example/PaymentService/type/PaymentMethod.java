@@ -30,9 +30,9 @@ public enum PaymentMethod {
                 return paymentMethod;
             }
         }
-        throw new CustomException(
-                "결제종류를 잘못 입력하셨습니다. : " + description,
-                HttpStatus.BAD_REQUEST
-        );
+        throw CustomException.builder()
+                .httpStatus(HttpStatus.BAD_REQUEST)
+                .message("결제종류를 잘못 입력하셨습니다. : " + description)
+                .build();
     }
 }
