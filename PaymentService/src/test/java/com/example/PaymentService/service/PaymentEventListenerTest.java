@@ -2,6 +2,7 @@ package com.example.PaymentService.service;
 
 import com.example.PaymentService.dto.PaymentDTO;
 import com.example.PaymentService.dto.PaymentRequestDTO;
+import com.example.PaymentService.pg.PaymentGatewayService;
 import com.google.protobuf.InvalidProtocolBufferException;
 import edaordersystem.protobuf.EdaMessage;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class PaymentEventListenerTest {
     private KafkaTemplate<String, byte[]> kafkaTemplate;
 
     @Mock
-    private PaymentService paymentService;
+    private PaymentGatewayService PaymentGatewayService;
 
     @InjectMocks
     private PaymentEventListener paymentEventListener;
@@ -61,7 +62,7 @@ class PaymentEventListenerTest {
                 .build();
 
         //when
-        when(paymentService.confirmPayment(any(PaymentRequestDTO.class)))
+        when(PaymentGatewayService.confirmPayment(any(PaymentRequestDTO.class)))
                 .thenReturn(mockPaymentDTO);
 
         paymentEventListener.paymentConfirmRequestEventListener(paymentRequestV1Message.toByteArray());
@@ -70,7 +71,7 @@ class PaymentEventListenerTest {
         //토스결제 확인요청을 올바르게 보냈는지
         ArgumentCaptor<PaymentRequestDTO> paymentRequestDTOCaptor = ArgumentCaptor
                 .forClass(PaymentRequestDTO.class);
-        verify(paymentService).confirmPayment(paymentRequestDTOCaptor.capture());
+        verify(PaymentGatewayService).confirmPayment(paymentRequestDTOCaptor.capture());
 
         assertThat(paymentRequestDTOCaptor.getValue().getOrderId()).isEqualTo(paymentRequestDTO.getOrderId());
         assertThat(paymentRequestDTOCaptor.getValue().getPaymentKey()).isEqualTo(paymentRequestDTO.getPaymentKey());

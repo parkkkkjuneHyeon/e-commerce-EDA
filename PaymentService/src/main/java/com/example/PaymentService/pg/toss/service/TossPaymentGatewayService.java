@@ -27,7 +27,7 @@ public class TossPaymentGatewayService implements PaymentGatewayService {
     private final RestClient restClient;
     private final TossProperties tossProperties;
 
-
+    @Override
     public PaymentDTO confirmPayment(PaymentRequestDTO paymentRequestDTO) {
         String authorizations = getAuthorizationSecretKey();
 
