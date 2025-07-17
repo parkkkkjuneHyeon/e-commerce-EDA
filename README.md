@@ -1,228 +1,222 @@
-# E-commerce Event-Driven Architecture (EDA)
+# 이벤트 기반 마이크로서비스 아키텍처
 
-## 📋 프로젝트 개요
+## 시스템 개요
 
-이 프로젝트는 Event-Driven Architecture 패턴을 활용한 마이크로서비스 기반의 전자상거래 시스템입니다. 각 서비스는 독립적으로 운영되며, 이벤트 브로커를 통해 느슨하게 결합된 아키텍처로 구성되어 있습니다.
+본 시스템은 이벤트 기반 아키텍처(Event-Driven Architecture)를 기반으로 한 마이크로서비스 플랫폼입니다. Apache Kafka를 중심으로 한 메시지 브로커를 통해 서비스 간 비동기 통신을 구현하고, 각 서비스는 독립적인 데이터베이스를 사용하여 느슨한 결합을 유지합니다.
 
-## 🏗️ 시스템 아키텍처
-                      
-graph TD
-    %% 외부 사용자
+## 아키텍처 다이어그램
+
+```mermaid
+graph TB
+    %% 사용자 및 외부 시스템
     Customer[👤 Customer]
     Seller[👤 Seller]
-    
+    TossPayments[💳 Toss Payments<br/>External API]
+    ExternalDelivery[🚚 External Delivery<br/>Service]
+
     %% 마이크로서비스
-    Search[🔍 Search Service<br/>포트: 8084]
-    Catalog[📦 Catalog Service<br/>포트: 8085]
-    Order[📋 Order Service<br/>포트: 8086]
-    Payment[💳 Payment Service<br/>포트: 8082]
-    Delivery[🚚 Delivery Service<br/>포트: 8083]
-    Member[👥 Member Service<br/>포트: 8081]
-    
+    SearchService[🔍 Search Service<br/>:8084]
+    CatalogService[📦 Catalog Service<br/>:8085]
+    OrderService[🛒 Order Service<br/>:8086]
+    MemberService[👥 Member Service<br/>:8081]
+    PaymentService[💰 Payment Service<br/>:8082]
+    DeliveryService[🚛 Delivery Service<br/>:8083]
+
     %% 데이터베이스
-    Redis[(🔴 Redis<br/>포트: 6379)]
-    Cassandra[(🗃️ Cassandra<br/>포트: 9042)]
-    MySQL[(🐬 MySQL<br/>포트: 3306)]
-    
-    %% 이벤트 브로커
-    Kafka[📨 Event Broker<br/>Kafka Cluster<br/>포트: 19092-19094]
-    
-    %% 외부 API
-    TossAPI[💰 토스페이먼츠<br/>API]
-    DeliveryAPI[📦 External<br/>Delivery API]
-    
-    %% 플로우
-    Seller -->|상품 정보 등록| Catalog
-    Catalog --> Cassandra
-    Catalog -->|상품 정보 이벤트| Kafka
-    
-    Customer -->|검색| Search
-    Search <--> Redis
-    Kafka -->|상품 검색 이벤트| Search
-    
-    Customer -->|로그인| Member
-    Member --> MySQL
-    
-    Customer -->|주문| Order
-    Order --> MySQL
-    Order -->|주문 이벤트| Kafka
-    
-    Kafka -->|결제 요청 이벤트| Payment
-    Payment <-->|결제 처리| TossAPI
-    Payment --> MySQL
-    Payment -->|결제 완료 이벤트| Kafka
-    
-    Kafka -->|배송 요청 이벤트| Delivery
-    Delivery --> MySQL
-    Delivery <-->|배송 처리| DeliveryAPI
-    
+    Redis[(Redis<br/>Cache)]
+    Cassandra[(Cassandra<br/>NoSQL)]
+    MySQL[(MySQL<br/>RDBMS)]
+
+    %% 메시지 브로커
+    Kafka[📨 Apache Kafka<br/>Event Broker<br/>3 Brokers + Zookeeper]
+
+    %% 사용자 상호작용
+    Customer --> SearchService
+    Customer --> OrderService
+    Customer --> MemberService
+    Seller --> CatalogService
+
+    %% 서비스-데이터베이스 연결
+    SearchService --> Redis
+    CatalogService --> Cassandra
+    CatalogService --> MySQL
+    OrderService --> MySQL
+    MemberService --> MySQL
+    PaymentService --> MySQL
+    DeliveryService --> MySQL
+
+    %% 외부 서비스 연동
+    PaymentService --> TossPayments
+    DeliveryService --> ExternalDelivery
+
+    %% 이벤트 기반 통신 (Kafka를 통한)
+    SearchService -.-> Kafka
+    CatalogService -.-> Kafka
+    OrderService -.-> Kafka
+    MemberService -.-> Kafka
+    PaymentService -.-> Kafka
+    DeliveryService -.-> Kafka
+
     %% 스타일링
-    classDef serviceStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef dbStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef externalStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef kafkaStyle fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px
-    
-    class Search,Catalog,Order,Payment,Delivery,Member serviceStyle
-    class Redis,Cassandra,MySQL dbStyle
-    class TossAPI,DeliveryAPI externalStyle
-    class Kafka kafkaStyle
+    classDef serviceClass fill:#90EE90,stroke:#333,stroke-width:2px
+    classDef dbClass fill:#87CEEB,stroke:#333,stroke-width:2px
+    classDef externalClass fill:#FFB6C1,stroke:#333,stroke-width:2px
+    classDef kafkaClass fill:#FFA500,stroke:#333,stroke-width:3px
+    classDef userClass fill:#DDA0DD,stroke:#333,stroke-width:2px
 
-## 🔧 기술 스택
-
-### Infrastructure
-- **Container**: Docker, Docker Compose
-- **Event Streaming**: Apache Kafka (3-node cluster)
-- **Service Discovery**: Zookeeper
-- **Database**: 
-  - MySQL 8.0 (관계형 데이터)
-  - Cassandra (NoSQL, 상품 카탈로그)
-  - Redis (캐싱, 검색)
-
-### Microservices
-- **Member Service** (포트: 8081) - 회원 관리
-- **Payment Service** (포트: 8082) - 결제 처리 (토스페이먼츠 연동)
-- **Delivery Service** (포트: 8083) - 배송 관리
-- **Search Service** (포트: 8084) - 검색 기능
-- **Catalog Service** (포트: 8085) - 상품 카탈로그
-- **Order Service** (포트: 8086) - 주문 처리
-
-### External Integrations
-- **토스페이먼츠**: 실제 결제 처리를 위한 외부 결제 게이트웨이
-
-## 🚀 실행 방법
-
-### 사전 요구사항
-- Docker
-- Docker Compose
-
-### 설치 및 실행
-
-1. **저장소 클론**
-   ```bash
-   git clone https://github.com/parkkkkjuneHyeon/e-commerce-EDA.git
-   cd e-commerce-EDA
-   ```
-
-2. **전체 시스템 시작**
-   ```bash
-   docker-compose up -d
-   ```
-
-3. **서비스 상태 확인**
-   ```bash
-   docker-compose ps
-   ```
-
-### 개별 서비스 접근
-
-| 서비스 | 포트 | 접근 URL |
-|--------|------|----------|
-| Member Service | 8081 | http://localhost:8081 |
-| Payment Service | 8082 | http://localhost:8082 |
-| Delivery Service | 8083 | http://localhost:8083 |
-| Search Service | 8084 | http://localhost:8084 |
-| Catalog Service | 8085 | http://localhost:8085 |
-| Order Service | 8086 | http://localhost:8086 |
-
-### 데이터베이스 접근
-
-| 데이터베이스 | 포트 | 접속 정보 |
-|--------------|------|-----------|
-| MySQL | 3306 | root/1234, database: my_db |
-| Redis | 6379 | localhost:6379 |
-| Cassandra | 9042 | localhost:9042 |
-
-### Kafka 클러스터
-
-| 브로커 | 포트 | 접속 정보 |
-|--------|------|-----------|
-| Kafka1 | 19092 | localhost:19092 |
-| Kafka2 | 19093 | localhost:19093 |
-| Kafka3 | 19094 | localhost:19094 |
-
-## 📊 이벤트 플로우
-
-1. **상품 등록**: Seller → Catalog Service → Cassandra
-2. **상품 검색**: Customer → Search Service → Redis
-3. **주문 처리**: Customer → Order Service → Event Broker
-4. **결제 처리**: Order Event → Payment Service → 토스페이먼츠 API → 결제 완료 이벤트
-5. **배송 처리**: Payment Event → Delivery Service → External Delivery Adapter
-
-### 결제 프로세스 상세
-```
-주문 생성 → Payment Service → 토스페이먼츠 결제창 → 결제 승인 → 결제 완료 이벤트 발행 → 배송 서비스 트리거
+    class SearchService,CatalogService,OrderService,MemberService,PaymentService,DeliveryService serviceClass
+    class Redis,Cassandra,MySQL dbClass
+    class TossPayments,ExternalDelivery externalClass
+    class Kafka kafkaClass
+    class Customer,Seller userClass
 ```
 
-## 🔍 주요 특징
+## 서비스 구성
 
-### Event-Driven Architecture
-- **비동기 통신**: 서비스 간 Kafka를 통한 이벤트 기반 통신
-- **느슨한 결합**: 서비스 간 직접적인 의존성 최소화
-- **확장성**: 개별 서비스의 독립적인 스케일링 가능
+### 🎯 핵심 비즈니스 서비스
 
-### 실제 결제 시스템 연동
-- **토스페이먼츠 API**: 실제 결제 처리를 위한 안전하고 신뢰할 수 있는 결제 게이트웨이
-- **실시간 결제 상태**: 결제 승인/취소 상태를 실시간으로 이벤트 시스템에 반영
+| 서비스 | 포트 | 역할 | 데이터베이스 | 특징 |
+|--------|------|------|--------------|------|
+| **Member Service** | 8081 | 회원 관리, 인증/인가 | MySQL | 사용자 정보 관리 |
+| **Catalog Service** | 8085 | 상품 카탈로그 관리 | Cassandra + MySQL | 대용량 상품 데이터 처리 |
+| **Search Service** | 8084 | 상품 검색 | Redis | 고성능 검색 캐싱 |
+| **Order Service** | 8086 | 주문 처리 | MySQL | 주문 생명주기 관리 |
+| **Payment Service** | 8082 | 결제 처리 | MySQL | **토스페이먼츠 연동** |
+| **Delivery Service** | 8083 | 배송 관리 | MySQL | 외부 배송업체 연동 |
 
-### 데이터 저장소 다양화
-- **MySQL**: 트랜잭션이 중요한 주문, 결제, 회원 데이터
-- **Cassandra**: 대용량 상품 카탈로그 데이터
-- **Redis**: 빠른 검색을 위한 캐싱
+### 💾 데이터 저장소
 
-### 고가용성
-- **Kafka 클러스터**: 3개 브로커로 구성된 고가용성 메시지 브로커
-- **장애 격리**: 마이크로서비스별 독립적인 장애 처리
+#### MySQL (포트: 3306)
+- **용도**: 트랜잭션 데이터 저장
+- **사용 서비스**: Member, Payment, Delivery, Order, Catalog
+- **특징**: ACID 속성이 중요한 비즈니스 데이터
 
-## 🛠️ 개발 환경 설정
+#### Cassandra (포트: 9042)
+- **용도**: 대용량 상품 메타데이터
+- **사용 서비스**: Catalog Service
+- **특징**: 높은 가용성과 확장성
 
-### 토스페이먼츠 연동 설정
-결제 서비스를 사용하기 위해서는 토스페이먼츠 개발자 계정이 필요합니다:
-1. [토스페이먼츠 개발자센터](https://developers.tosspayments.com/)에서 계정 생성
-2. API 키 발급 (클라이언트 키, 시크릿 키)
-3. PaymentService의 환경변수에 API 키 설정
+#### Redis (포트: 6379)
+- **용도**: 검색 결과 캐싱
+- **사용 서비스**: Search Service
+- **특징**: 빠른 응답시간
 
-### 로그 확인
+### 📨 이벤트 브로커
+
+#### Apache Kafka 클러스터
+```
+┌─────────────────────────────────────┐
+│          Kafka Cluster              │
+├─────────────────────────────────────┤
+│ • Zookeeper: 22181                  │
+│ • Kafka Broker 1: 19092             │
+│ • Kafka Broker 2: 19093             │
+│ • Kafka Broker 3: 19094             │
+│                                     │
+│ • Replication Factor: 3             │
+│ • Default Partitions: 3             │
+└─────────────────────────────────────┘
+```
+
+## 🔄 이벤트 플로우
+
+### 주문 처리 플로우
+```mermaid
+sequenceDiagram
+    participant C as Customer
+    participant O as Order Service
+    participant P as Payment Service
+    participant D as Delivery Service
+    participant K as Kafka
+    participant TP as Toss Payments
+
+    C->>O: 주문 생성
+    O->>K: 주문 생성 이벤트 발행
+    K->>P: 결제 요청 이벤트
+    P->>TP: 토스페이먼츠 결제 요청
+    TP-->>P: 결제 결과
+    P->>K: 결제 완료/실패 이벤트
+    K->>D: 배송 시작 이벤트 (결제 성공시)
+    K->>O: 주문 상태 업데이트 이벤트
+    D->>K: 배송 상태 업데이트 이벤트
+```
+
+### 상품 등록 플로우
+```mermaid
+sequenceDiagram
+    participant S as Seller
+    participant C as Catalog Service
+    participant K as Kafka
+    participant SR as Search Service
+
+    S->>C: 상품 등록/수정
+    C->>K: 상품 변경 이벤트 발행
+    K->>SR: 검색 인덱스 업데이트 이벤트
+    SR->>SR: Redis 캐시 업데이트
+```
+
+## 🔗 외부 시스템 연동
+
+### 토스페이먼츠 연동 (Payment Service)
+- **연동 방식**: REST API
+- **주요 기능**:
+  - 결제 요청 및 승인
+  - 결제 취소 및 환불
+- **보안**: HTTPS, API 키 인증
+
+### 외부 배송업체 연동 (Delivery Service)
+- **연동 방식**: REST API / 웹훅
+- **주요 기능**:
+  - 배송 요청
+  - 배송 상태 추적
+  - 배송 완료 알림
+
+## 🚀 배포 및 실행
+
+### Docker Compose 실행
 ```bash
-# 전체 서비스 로그
-docker-compose logs -f
+# 전체 서비스 시작
+docker-compose up -d
 
-# 특정 서비스 로그
+# 특정 서비스만 시작
+docker-compose up -d kafka1 kafka2 kafka3 zookeeper-1
+
+# 로그 확인
 docker-compose logs -f [service-name]
-
-# 결제 서비스 로그 확인
-docker-compose logs -f payment-service
 ```
 
-### 서비스 재시작
+### 서비스 헬스체크
 ```bash
-# 특정 서비스 재시작
-docker-compose restart [service-name]
+# MySQL 연결 확인
+docker-compose exec mysql-server mysqladmin ping -h localhost -u root -p1234
 
-# 전체 시스템 재시작
-docker-compose restart
+# Cassandra 상태 확인
+docker-compose exec cassandra-node-0 cqlsh -e "describe cluster"
+
+# Kafka 토픽 확인
+docker-compose exec kafka1 kafka-topics --bootstrap-server localhost:9092 --list
 ```
 
-### 데이터베이스 초기화
-```bash
-# MySQL 접속
-docker-compose exec mysql-server mysql -u root -p1234 my_db
+## 📊 모니터링 포인트
 
-# Cassandra 접속
-docker-compose exec cassandra-node-0 cqlsh
+### 성능 메트릭
+- **응답시간**: 각 서비스별 API 응답시간
+- **처리량**: Kafka 메시지 처리량
+- **에러율**: 서비스별 에러 발생률
 
-# Redis 접속
-docker-compose exec redis-server redis-cli
-```
+### 비즈니스 메트릭
+- **주문 성공률**: 전체 주문 대비 성공한 주문 비율
+- **결제 성공률**: 토스페이먼츠 연동 성공률
+- **검색 응답시간**: Redis 캐시 hit rate
 
-## 🚦 시스템 종료
+## 🔧 확장성 고려사항
 
-```bash
-# 서비스 중지
-docker-compose down
+### 수평 확장
+- **Kafka**: 브로커 추가로 처리량 증대
+- **서비스**: 컨테이너 복제를 통한 로드 분산
+- **데이터베이스**: 읽기 전용 복제본 추가
 
-# 볼륨까지 함께 삭제
-docker-compose down -v
-```
-
-
-**GitHub Repository**: [https://github.com/parkkkkjuneHyeon/e-commerce-EDA](https://github.com/parkkkkjuneHyeon/e-commerce-EDA)
+### 장애 대응
+- **Circuit Breaker**: 외부 API 호출 실패 시 격리
+- **Retry**: 일시적 장애 시 재시도 로직
+- **Dead Letter Queue**: 처리 실패 메시지 별도 관리
