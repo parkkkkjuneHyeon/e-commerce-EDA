@@ -6,32 +6,66 @@
 
 ## 🏗️ 시스템 아키텍처
                       
-                      ```
-                                                          상품 정보 등록
-                                                               ↓
-                                                    Seller → Catalog → Cassandra
-                                                               ↓
-                                                          상품 정보 이벤트
-                                                               ↓
-         검색           상품 검색 이벤트                ┌─────────────────┐
-Customer ─→ Search ←─── Redis ←────────────────────────│                 │
-    ↓                                                  │   Event Broker  │
-    │                                                  │     (Kafka)     │
-    │     ┌─ 주문 이벤트 ─→ Order ─→ 주문 요청 이벤트→  │                 │
-  └─ 주문→                                             │                 │
-                                                       └─────────────────┘
-                                                                ↓
-                                                         결제 요청 이벤트
-                                                                ↓
-로그인 ─→ Member                                      Payment ← 토스페이먼츠 API
-                                                                ↓
-                                                         결제 완료 이벤트
-                                                                ↓
-                                                            Delivery ← 배송 조회
-                                                                ↓
-                                                         External Delivery
-                                                             Adapter
-```
+graph TD
+    %% 외부 사용자
+    Customer[👤 Customer]
+    Seller[👤 Seller]
+    
+    %% 마이크로서비스
+    Search[🔍 Search Service<br/>포트: 8084]
+    Catalog[📦 Catalog Service<br/>포트: 8085]
+    Order[📋 Order Service<br/>포트: 8086]
+    Payment[💳 Payment Service<br/>포트: 8082]
+    Delivery[🚚 Delivery Service<br/>포트: 8083]
+    Member[👥 Member Service<br/>포트: 8081]
+    
+    %% 데이터베이스
+    Redis[(🔴 Redis<br/>포트: 6379)]
+    Cassandra[(🗃️ Cassandra<br/>포트: 9042)]
+    MySQL[(🐬 MySQL<br/>포트: 3306)]
+    
+    %% 이벤트 브로커
+    Kafka[📨 Event Broker<br/>Kafka Cluster<br/>포트: 19092-19094]
+    
+    %% 외부 API
+    TossAPI[💰 토스페이먼츠<br/>API]
+    DeliveryAPI[📦 External<br/>Delivery API]
+    
+    %% 플로우
+    Seller -->|상품 정보 등록| Catalog
+    Catalog --> Cassandra
+    Catalog -->|상품 정보 이벤트| Kafka
+    
+    Customer -->|검색| Search
+    Search <--> Redis
+    Kafka -->|상품 검색 이벤트| Search
+    
+    Customer -->|로그인| Member
+    Member --> MySQL
+    
+    Customer -->|주문| Order
+    Order --> MySQL
+    Order -->|주문 이벤트| Kafka
+    
+    Kafka -->|결제 요청 이벤트| Payment
+    Payment <-->|결제 처리| TossAPI
+    Payment --> MySQL
+    Payment -->|결제 완료 이벤트| Kafka
+    
+    Kafka -->|배송 요청 이벤트| Delivery
+    Delivery --> MySQL
+    Delivery <-->|배송 처리| DeliveryAPI
+    
+    %% 스타일링
+    classDef serviceStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef dbStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef externalStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef kafkaStyle fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px
+    
+    class Search,Catalog,Order,Payment,Delivery,Member serviceStyle
+    class Redis,Cassandra,MySQL dbStyle
+    class TossAPI,DeliveryAPI externalStyle
+    class Kafka kafkaStyle
 
 ## 🔧 기술 스택
 
