@@ -4,71 +4,74 @@
 
 본 시스템은 이벤트 기반 아키텍처(Event-Driven Architecture)를 기반으로 한 마이크로서비스 플랫폼입니다. Apache Kafka를 중심으로 한 메시지 브로커를 통해 서비스 간 비동기 통신을 구현하고, 각 서비스는 독립적인 데이터베이스를 사용하여 느슨한 결합을 유지합니다.
 
+
 ## 아키텍처 다이어그램
 
+### 이벤트 기반 마이크로서비스 구조
+```
+                    👤 Customer                      👤 Seller
+                         |                              |
+              ┌──────────┼──────────┐                   |
+              |          |          |                   |
+              v          v          v                   v
+    🔍 Search Service  🛒 Order   👥 Member      📦 Catalog Service
+         :8084         Service     Service           :8085
+                        :8086       :8081
+              |          |          |                   |
+              v          v          v                   v
+         Redis ────┐     |          |              ┌─ Cassandra
+              Cache│     |          |              │   NoSQL
+                   │     |          |              │
+                   └─────┼──────────┼──────────────┼─────┐
+                         │          │              │     │
+                         v          v              v     │
+                    ┌─────────────────────────────────────┐│
+                    │        📨 Apache Kafka              ││
+                    │       Event Broker Core             ││
+                    │   (3 Brokers + Zookeeper)          ││
+                    └─────────────────────────────────────┘│
+                         │          │              │     │
+                         v          v              v     │
+                    💰 Payment  🚛 Delivery       │     │
+                     Service     Service          │     │
+                      :8082       :8083           │     │
+                         |          |             │     │
+                         v          v             v     │
+                      MySQL ────────┴──────── MySQL ────┘
+                      RDBMS                   RDBMS
+                         |          |
+                         v          v
+                 💳 Toss Payments  🚚 External
+                   External API    Delivery Service
+```
+
+### 핵심 이벤트 플로우
 ```mermaid
-graph TB
-    %% 사용자 및 외부 시스템
-    Customer[👤 Customer]
-    Seller[👤 Seller]
-    TossPayments[💳 Toss Payments<br/>External API]
-    ExternalDelivery[🚚 External Delivery<br/>Service]
+sequenceDiagram
+    participant C as Customer
+    participant O as Order Service  
+    participant K as Kafka Broker
+    participant P as Payment Service
+    participant T as Toss Payments
+    participant D as Delivery Service
 
-    %% 마이크로서비스
-    SearchService[🔍 Search Service<br/>:8084]
-    CatalogService[📦 Catalog Service<br/>:8085]
-    OrderService[🛒 Order Service<br/>:8086]
-    MemberService[👥 Member Service<br/>:8081]
-    PaymentService[💰 Payment Service<br/>:8082]
-    DeliveryService[🚛 Delivery Service<br/>:8083]
+    Note over K: 📨 이벤트 기반 통신
 
-    %% 데이터베이스
-    Redis[(Redis<br/>Cache)]
-    Cassandra[(Cassandra<br/>NoSQL)]
-    MySQL[(MySQL<br/>RDBMS)]
+    C->>O: 1. 주문 생성 요청
+    O->>K: 2. OrderCreated 이벤트 발행
+    
+    K->>P: 3. 결제 요청 이벤트 전달
+    P->>T: 4. 토스페이먼츠 결제 API 호출
+    T-->>P: 5. 결제 결과 응답
+    P->>K: 6. PaymentCompleted 이벤트 발행
+    
+    K->>D: 7. 배송 시작 이벤트 전달  
+    D->>K: 8. DeliveryStarted 이벤트 발행
+    
+    K->>O: 9. 주문 상태 업데이트 이벤트
+    O-->>C: 10. 주문 처리 완료 응답
 
-    %% 메시지 브로커
-    Kafka[📨 Apache Kafka<br/>Event Broker<br/>3 Brokers + Zookeeper]
-
-    %% 사용자 상호작용
-    Customer --> SearchService
-    Customer --> OrderService
-    Customer --> MemberService
-    Seller --> CatalogService
-
-    %% 서비스-데이터베이스 연결
-    SearchService --> Redis
-    CatalogService --> Cassandra
-    CatalogService --> MySQL
-    OrderService --> MySQL
-    MemberService --> MySQL
-    PaymentService --> MySQL
-    DeliveryService --> MySQL
-
-    %% 외부 서비스 연동
-    PaymentService --> TossPayments
-    DeliveryService --> ExternalDelivery
-
-    %% 이벤트 기반 통신 (Kafka를 통한)
-    SearchService -.-> Kafka
-    CatalogService -.-> Kafka
-    OrderService -.-> Kafka
-    MemberService -.-> Kafka
-    PaymentService -.-> Kafka
-    DeliveryService -.-> Kafka
-
-    %% 스타일링
-    classDef serviceClass fill:#90EE90,stroke:#333,stroke-width:2px
-    classDef dbClass fill:#87CEEB,stroke:#333,stroke-width:2px
-    classDef externalClass fill:#FFB6C1,stroke:#333,stroke-width:2px
-    classDef kafkaClass fill:#FFA500,stroke:#333,stroke-width:3px
-    classDef userClass fill:#DDA0DD,stroke:#333,stroke-width:2px
-
-    class SearchService,CatalogService,OrderService,MemberService,PaymentService,DeliveryService serviceClass
-    class Redis,Cassandra,MySQL dbClass
-    class TossPayments,ExternalDelivery externalClass
-    class Kafka kafkaClass
-    class Customer,Seller userClass
+    Note over K: 모든 서비스 간 통신은<br/>Kafka를 통한 비동기 이벤트
 ```
 
 ## 서비스 구성
@@ -164,12 +167,12 @@ sequenceDiagram
   - 결제 취소 및 환불
 - **보안**: HTTPS, API 키 인증
 
-### 외부 배송업체 연동 (Delivery Service)
-- **연동 방식**: REST API / 웹훅
+### 배송 (Delivery Service)
+
 - **주요 기능**:
   - 배송 요청
-  - 배송 상태 추적
-  - 배송 완료 알림
+  - 배송 상태 
+  - 배송 완료 
 
 ## 🚀 배포 및 실행
 
@@ -177,9 +180,6 @@ sequenceDiagram
 ```bash
 # 전체 서비스 시작
 docker-compose up -d
-
-# 특정 서비스만 시작
-docker-compose up -d kafka1 kafka2 kafka3 zookeeper-1
 
 # 로그 확인
 docker-compose logs -f [service-name]
@@ -218,5 +218,6 @@ docker-compose exec kafka1 kafka-topics --bootstrap-server localhost:9092 --list
 
 ### 장애 대응
 - **Circuit Breaker**: 외부 API 호출 실패 시 격리
-- **Retry**: 일시적 장애 시 재시도 로직
 - **Dead Letter Queue**: 처리 실패 메시지 별도 관리
+
+---
