@@ -5,32 +5,32 @@
 이 프로젝트는 Event-Driven Architecture 패턴을 활용한 마이크로서비스 기반의 전자상거래 시스템입니다. 각 서비스는 독립적으로 운영되며, 이벤트 브로커를 통해 느슨하게 결합된 아키텍처로 구성되어 있습니다.
 
 ## 🏗️ 시스템 아키텍처
-
-```
-                                    상품 정보 등록
-                                         ↓
-                              Seller → Catalog → Cassandra
-                                         ↓
-                                    상품 정보 이벤트
-                                         ↓
-         검색           상품 검색 이벤트        ┌─────────────────┐
-Customer ─→ Search ←─── Redis ←─────────────────│                 │
-    ↓                                          │   Event Broker  │
-    │                                          │     (Kafka)     │
-    │     ┌─ 주문 이벤트 ─→ Order ─→ 주문 요청 이벤트→ │                 │
-    └─ 주문→                                    │                 │
-                                               └─────────────────┘
-                                                      ↓
-                                               결제 요청 이벤트
-                                                      ↓
-    로그인 ─→ Member                              Payment ← 토스페이먼츠 API
-                                                      ↓
-                                               결제 완료 이벤트
-                                                      ↓
-                                                  Delivery ← 배송 조회
-                                                      ↓
-                                               External Delivery
-                                                   Adapter
+                      
+                      ```
+                                                          상품 정보 등록
+                                                               ↓
+                                                    Seller → Catalog → Cassandra
+                                                               ↓
+                                                          상품 정보 이벤트
+                                                               ↓
+         검색           상품 검색 이벤트                ┌─────────────────┐
+Customer ─→ Search ←─── Redis ←────────────────────────│                 │
+    ↓                                                  │   Event Broker  │
+    │                                                  │     (Kafka)     │
+    │     ┌─ 주문 이벤트 ─→ Order ─→ 주문 요청 이벤트→  │                 │
+  └─ 주문→                                             │                 │
+                                                       └─────────────────┘
+                                                                ↓
+                                                         결제 요청 이벤트
+                                                                ↓
+로그인 ─→ Member                                      Payment ← 토스페이먼츠 API
+                                                                ↓
+                                                         결제 완료 이벤트
+                                                                ↓
+                                                            Delivery ← 배송 조회
+                                                                ↓
+                                                         External Delivery
+                                                             Adapter
 ```
 
 ## 🔧 기술 스택
