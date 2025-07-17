@@ -121,29 +121,6 @@ sequenceDiagram
 └─────────────────────────────────────┘
 ```
 
-## 🔄 이벤트 플로우
-
-### 주문 처리 플로우
-```mermaid
-sequenceDiagram
-    participant C as Customer
-    participant O as Order Service
-    participant P as Payment Service
-    participant D as Delivery Service
-    participant K as Kafka
-    participant TP as Toss Payments
-
-    C->>O: 주문 생성
-    O->>K: 주문 생성 이벤트 발행
-    K->>P: 결제 요청 이벤트
-    P->>TP: 토스페이먼츠 결제 요청
-    TP-->>P: 결제 결과
-    P->>K: 결제 완료/실패 이벤트
-    K->>D: 배송 시작 이벤트 (결제 성공시)
-    K->>O: 주문 상태 업데이트 이벤트
-    D->>K: 배송 상태 업데이트 이벤트
-```
-
 ### 상품 등록 플로우
 ```mermaid
 sequenceDiagram
