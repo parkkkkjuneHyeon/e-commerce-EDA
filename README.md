@@ -193,8 +193,5 @@ docker-compose exec kafka1 kafka-topics --bootstrap-server localhost:9092 --list
 - **서비스**: 컨테이너 복제를 통한 로드 분산
 - **데이터베이스**: 읽기 전용 복제본 추가
 
-### 장애 대응
-- **Circuit Breaker**: 외부 API 호출 실패 시 격리
-- **Dead Letter Queue**: 처리 실패 메시지 별도 관리
 
 ---
