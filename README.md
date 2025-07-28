@@ -142,7 +142,7 @@ sequenceDiagram
 - **주요 기능**:
   - 결제 요청 및 승인
   - 결제 취소 및 환불
-- **보안**: HTTPS, API 키 인증
+- **보안**: API 키 인증
 
 ### 배송 (Delivery Service)
 
